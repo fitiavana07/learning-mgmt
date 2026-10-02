@@ -29,13 +29,14 @@ import dev.fitiavana.learning_mgmt.features.progress.CurriculumProgress.Summary
 @Composable
 fun AppDrawerContent(
     items: List<DrawerItem>,
+    versionName: String,
     onSelect: (String) -> Unit,
     onManageCurricula: () -> Unit,
 ) {
     ModalDrawerSheet {
         Column(Modifier.verticalScroll(rememberScrollState()).padding(vertical = 12.dp)) {
             Text(
-                text = stringResource(R.string.app_name),
+                text = stringResource(R.string.drawer_app_title, stringResource(R.string.app_name), versionName),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 28.dp, vertical = 12.dp),

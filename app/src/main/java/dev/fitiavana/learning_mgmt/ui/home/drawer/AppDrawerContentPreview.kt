@@ -23,6 +23,6 @@ private val sampleItems = listOf(
 @Composable
 private fun AppDrawerContentPreview() {
     LearningmgmtTheme {
-        AppDrawerContent(items = sampleItems, onSelect = {}, onManageCurricula = {})
+        AppDrawerContent(items = sampleItems, versionName = "0.4", onSelect = {}, onManageCurricula = {})
     }
 }

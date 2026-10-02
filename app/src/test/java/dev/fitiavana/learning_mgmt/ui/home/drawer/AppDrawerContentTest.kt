@@ -36,6 +36,7 @@ class AppDrawerContentTest {
             LearningmgmtTheme {
                 AppDrawerContent(
                     items = items,
+                    versionName = "1.2.3",
                     onSelect = { selectedIds += it },
                     onManageCurricula = { managed++ },
                 )
@@ -66,6 +67,13 @@ class AppDrawerContentTest {
         compose.onNodeWithText("3/3").assertIsDisplayed()
         compose.onNodeWithText("No phases yet").assertIsDisplayed()
         compose.onNodeWithText("0/0").assertIsDisplayed()
+    }
+
+    @Test
+    fun showsTheAppVersionNextToTheAppName() {
+        show(emptyList())
+
+        compose.onNodeWithText("[dev] learning-mgmt · v1.2.3").assertIsDisplayed()
     }
 
     @Test

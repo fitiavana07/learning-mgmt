@@ -36,6 +36,7 @@
     <string name="home_no_phases_hint">Add some in Manage curricula</string>
 
     <string name="drawer_progress">%1$d/%2$d</string>
+    <string name="drawer_app_title">%1$s · v%2$s</string>
 
     <string name="curricula_none_yet">No curricula yet</string>
     <string name="curricula_none_hint">Tap + to create one</string>
