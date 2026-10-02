@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Dark window behind Compose, so the first frame is not a white flash in dark mode. -->
+    <style name="Theme.Learningmgmt" parent="android:Theme.Material.NoActionBar" />
+</resources>
