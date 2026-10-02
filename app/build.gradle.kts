@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 val localProperties = Properties().apply {
@@ -28,8 +29,6 @@ android {
         targetSdk = 37
         versionCode = 2
         versionName = "0.2"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
@@ -66,6 +65,15 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            // Robolectric reaches into JDK internals, which JDK 17+ encapsulates by default.
+            all { test ->
+                test.jvmArgs("--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")
+            }
+        }
+    }
 }
 
 dependencies {
@@ -77,11 +85,20 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.markdown.renderer.m3)
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.junit)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.junit)
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
