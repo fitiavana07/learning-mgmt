@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">learning-mgmt</string>
 
     <string name="action_cancel">Cancel</string>
@@ -23,8 +23,9 @@
 
     <string name="action_complete_phase">Mark as completed</string>
     <string name="action_start_phase">Start Phase %1$d</string>
-    <string name="action_wait_for_completion">Complete Phase %1$d first</string>
-    <string name="action_wait_for_start">Start Phase %1$d first</string>
+    <!-- "%1$d" is a phase number (a name), not a quantity, so these are not plurals. -->
+    <string name="action_wait_for_completion" tools:ignore="PluralsCandidate">Complete Phase %1$d first</string>
+    <string name="action_wait_for_start" tools:ignore="PluralsCandidate">Start Phase %1$d first</string>
     <string name="complete_dialog_title">Mark Phase %1$d as completed?</string>
     <string name="complete_dialog_confirm">Complete</string>
 

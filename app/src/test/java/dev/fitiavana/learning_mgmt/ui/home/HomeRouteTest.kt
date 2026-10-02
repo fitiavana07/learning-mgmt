@@ -58,11 +58,13 @@ class HomeRouteTest {
         phases.add(piano, "Scales", "")
 
         val selection = CurriculumSelection(curricula, testSelectionStore(folder.root, scope))
+        val homeViewModel = HomeViewModel(selection, progress)
+        val drawerViewModel = DrawerViewModel(curricula, selection, progress)
         compose.setContent {
             LearningmgmtTheme {
                 HomeRoute(
-                    home = HomeViewModel(selection, progress),
-                    drawer = DrawerViewModel(curricula, selection, progress),
+                    home = homeViewModel,
+                    drawer = drawerViewModel,
                     onManageCurricula = { managed++ },
                     onShowPhases = {},
                 )
