@@ -43,6 +43,11 @@
     <string name="curricula_options">Options for %1$s</string>
     <string name="curricula_delete_title">Delete %1$s?</string>
     <string name="curricula_delete_no_phases">This curriculum has no phases.</string>
+    <string name="manage_phases">Manage phases</string>
+    <string name="phases_options">Options for phase %1$d</string>
+    <string name="phases_delete_title">Delete Phase %1$d?</string>
+    <string name="phases_delete_message">Later phases are renumbered.</string>
+    <string name="phases_delete_in_progress">This phase is in progress, and its progress will be lost.</string>
     <plurals name="phase_count">
         <item quantity="one">%1$d phase</item>
         <item quantity="other">%1$d phases</item>
