@@ -1,0 +1,82 @@
+package dev.fitiavana.learning_mgmt.features.progress
+
+import dev.fitiavana.learning_mgmt.features.phases.Phase
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class PhaseRulesTest {
+    private fun p(number: Int, status: Status) = PhaseWithStatus(
+        phase = Phase(id = "p$number", curriculumId = "c", number = number, name = "Phase $number", description = ""),
+        status = status,
+    )
+
+    private val notStarted = Status.NOT_STARTED
+    private val inProgress = Status.IN_PROGRESS
+    private val completed = Status.COMPLETED
+
+    @Test
+    fun currentIsTheInProgressPhase() {
+        val phases = listOf(p(1, completed), p(2, inProgress), p(3, notStarted))
+
+        assertEquals(phases[1], PhaseRules.current(phases))
+    }
+
+    @Test
+    fun currentIsNullWhenNothingIsInProgress() {
+        assertNull(PhaseRules.current(listOf(p(1, completed), p(2, notStarted))))
+        assertNull(PhaseRules.current(emptyList()))
+    }
+
+    @Test
+    fun nextToStartIsTheLowestNotStartedPhase() {
+        val phases = listOf(p(1, completed), p(2, notStarted), p(3, notStarted))
+
+        assertEquals(phases[1], PhaseRules.nextToStart(phases))
+    }
+
+    @Test
+    fun nextToStartIgnoresOrderOfCompletedPhases() {
+        val phases = listOf(p(1, notStarted), p(2, completed))
+
+        assertEquals(phases[0], PhaseRules.nextToStart(phases))
+    }
+
+    @Test
+    fun nextToStartIsNullWhileAPhaseIsInProgress() {
+        assertNull(PhaseRules.nextToStart(listOf(p(1, inProgress), p(2, notStarted))))
+    }
+
+    @Test
+    fun nextToStartIsNullWhenEverythingIsCompleted() {
+        assertNull(PhaseRules.nextToStart(listOf(p(1, completed), p(2, completed))))
+        assertNull(PhaseRules.nextToStart(emptyList()))
+    }
+
+    @Test
+    fun onlyTheNextToStartPhaseCanBeStarted() {
+        val phases = listOf(p(1, completed), p(2, notStarted), p(3, notStarted))
+
+        assertFalse(PhaseRules.canStart(phases, phases[0]))
+        assertTrue(PhaseRules.canStart(phases, phases[1]))
+        assertFalse(PhaseRules.canStart(phases, phases[2]))
+    }
+
+    @Test
+    fun noPhaseCanBeStartedWhileAnotherIsInProgress() {
+        val phases = listOf(p(1, inProgress), p(2, notStarted))
+
+        assertFalse(PhaseRules.canStart(phases, phases[1]))
+    }
+
+    @Test
+    fun onlyTheInProgressPhaseCanBeCompleted() {
+        val phases = listOf(p(1, completed), p(2, inProgress), p(3, notStarted))
+
+        assertFalse(PhaseRules.canComplete(phases, phases[0]))
+        assertTrue(PhaseRules.canComplete(phases, phases[1]))
+        assertFalse(PhaseRules.canComplete(phases, phases[2]))
+    }
+}
