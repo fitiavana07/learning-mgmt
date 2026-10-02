@@ -31,6 +31,7 @@ fun NameDialog(
                 onValueChange = { name = it },
                 label = { Text(stringResource(R.string.field_name)) },
                 singleLine = true,
+                keyboardOptions = TextInput.keyboardOptions,
             )
         },
         confirmButton = {
