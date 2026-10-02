@@ -65,16 +65,16 @@ fun HomeScreen(
                 HomeContent.Loading -> Unit
                 HomeContent.NoCurricula -> EmptyState(
                     title = stringResource(R.string.home_no_curricula),
-                    actionLabel = stringResource(R.string.home_manage_curricula),
+                    actionLabel = stringResource(R.string.manage_curricula),
                     onAction = onManageCurricula,
                 )
                 HomeContent.NoPhases -> EmptyState(
-                    title = stringResource(R.string.home_no_phases),
+                    title = stringResource(R.string.phases_none_yet),
                     hint = stringResource(R.string.home_no_phases_hint),
-                    actionLabel = stringResource(R.string.home_manage_curricula),
+                    actionLabel = stringResource(R.string.manage_curricula),
                     onAction = onManageCurricula,
                 )
-                HomeContent.AllCompleted -> EmptyState(title = stringResource(R.string.home_all_completed))
+                HomeContent.AllCompleted -> EmptyState(title = stringResource(R.string.phases_all_completed))
                 is HomeContent.InProgress -> PhaseContent(content.phase) { StatusChip(Status.IN_PROGRESS) }
                 is HomeContent.ReadyToStart -> PhaseContent(content.phase) {
                     Text(stringResource(R.string.home_ready_to_begin), style = MaterialTheme.typography.titleMedium)
