@@ -35,6 +35,7 @@ import dev.fitiavana.learning_mgmt.R
 import dev.fitiavana.learning_mgmt.ui.common.ConfirmDialog
 import dev.fitiavana.learning_mgmt.ui.common.EmptyState
 import dev.fitiavana.learning_mgmt.ui.common.MarkdownText
+import dev.fitiavana.learning_mgmt.ui.common.TextInput
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +54,7 @@ fun PhaseEditorScreen(
     BackHandler(enabled = state.dirty && !state.saved, onBack = requestClose)
 
     Scaffold(
+        modifier = Modifier.imePadding(),
         topBar = {
             TopAppBar(
                 title = {
@@ -104,7 +106,7 @@ private fun EditorForm(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp),
+        modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp),
     ) {
         OutlinedTextField(
             value = state.name,
@@ -117,6 +119,7 @@ private fun EditorForm(
                 null
             },
             singleLine = true,
+            keyboardOptions = TextInput.keyboardOptions,
             modifier = Modifier.fillMaxWidth().testTag("name-field"),
         )
         WriteOrPreviewToggle(state.preview, onPreviewChange, Modifier.padding(vertical = 8.dp))
@@ -128,6 +131,7 @@ private fun EditorForm(
                 onValueChange = onDescriptionChange,
                 label = { Text(stringResource(R.string.editor_description)) },
                 minLines = 8,
+                keyboardOptions = TextInput.keyboardOptions,
                 modifier = Modifier.fillMaxWidth().testTag("description-field"),
             )
         }
