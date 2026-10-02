@@ -28,6 +28,13 @@ private class ManagePhasesStates : PreviewParameterProvider<ManagePhasesState> {
 @Composable
 private fun ManagePhasesScreenPreview(@PreviewParameter(ManagePhasesStates::class) state: ManagePhasesState) {
     LearningmgmtTheme {
-        ManagePhasesScreen(state = state, onDelete = {}, onMove = { _, _ -> }, onBack = {})
+        ManagePhasesScreen(
+            state = state,
+            onAdd = {},
+            onPhaseClick = {},
+            onDelete = {},
+            onMove = { _, _ -> },
+            onBack = {},
+        )
     }
 }

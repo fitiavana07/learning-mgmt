@@ -1,5 +1,6 @@
 package dev.fitiavana.learning_mgmt.ui.managecurricula.managephases
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,11 +12,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -51,6 +54,8 @@ import dev.fitiavana.learning_mgmt.ui.common.StatusIcon
 @Composable
 fun ManagePhasesScreen(
     state: ManagePhasesState,
+    onAdd: () -> Unit,
+    onPhaseClick: (String) -> Unit,
     onDelete: (String) -> Unit,
     onMove: (from: Int, to: Int) -> Unit,
     onBack: () -> Unit,
@@ -81,9 +86,18 @@ fun ManagePhasesScreen(
                 },
             )
         },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onAdd) {
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.phases_new))
+            }
+        },
     ) { padding ->
         if (state.rows.isEmpty()) {
-            EmptyState(title = stringResource(R.string.phases_none_yet), modifier = Modifier.padding(padding))
+            EmptyState(
+                title = stringResource(R.string.phases_none_yet),
+                hint = stringResource(R.string.phases_none_hint),
+                modifier = Modifier.padding(padding),
+            )
         } else {
             LazyColumn(Modifier.padding(padding).fillMaxSize()) {
                 items(state.rows, key = { it.id }) { row ->
@@ -91,6 +105,7 @@ fun ManagePhasesScreen(
                     PhaseListItem(
                         row = row,
                         dragging = dragging,
+                        onClick = { onPhaseClick(row.id) },
                         onDelete = { toDelete = row },
                         modifier = Modifier
                             .onSizeChanged { rowHeight = it.height.toFloat() }
@@ -140,6 +155,7 @@ fun ManagePhasesScreen(
 private fun PhaseListItem(
     row: PhaseRow,
     dragging: Boolean,
+    onClick: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -183,6 +199,6 @@ private fun PhaseListItem(
         colors = ListItemDefaults.colors(
             containerColor = if (dragging) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surface,
         ),
-        modifier = modifier,
+        modifier = modifier.clickable(onClick = onClick),
     )
 }

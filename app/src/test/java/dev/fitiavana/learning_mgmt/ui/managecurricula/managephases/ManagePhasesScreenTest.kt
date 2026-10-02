@@ -25,6 +25,8 @@ class ManagePhasesScreenTest {
     val compose = createComposeRule()
 
     private val deleted = mutableListOf<String>()
+    private val opened = mutableListOf<String>()
+    private var adds = 0
     private val moves = mutableListOf<Pair<Int, Int>>()
     private var back = 0
 
@@ -42,6 +44,8 @@ class ManagePhasesScreenTest {
             LearningmgmtTheme {
                 ManagePhasesScreen(
                     state = state,
+                    onAdd = { adds++ },
+                    onPhaseClick = { opened += it },
                     onDelete = { deleted += it },
                     onMove = { from, to -> moves += from to to },
                     onBack = { back++ },
@@ -105,6 +109,40 @@ class ManagePhasesScreenTest {
         show(ManagePhasesState(curriculumName = "Spanish"))
 
         compose.onNodeWithText("No phases yet").assertIsDisplayed()
+    }
+
+    @Test
+    fun emptyListInvitesToAddThePhase() {
+        show(ManagePhasesState(curriculumName = "Spanish"))
+
+        compose.onNodeWithText("Tap + to add one").assertIsDisplayed()
+    }
+
+    @Test
+    fun addButtonIsReported() {
+        show()
+
+        compose.onNodeWithContentDescription("New phase").performClick()
+
+        assertEquals(1, adds)
+    }
+
+    @Test
+    fun addButtonIsAvailableOnAnEmptyList() {
+        show(ManagePhasesState(curriculumName = "Spanish"))
+
+        compose.onNodeWithContentDescription("New phase").performClick()
+
+        assertEquals(1, adds)
+    }
+
+    @Test
+    fun tappingARowReportsItsId() {
+        show()
+
+        compose.onNodeWithText("Phase 2 · Verbs").performClick()
+
+        assertEquals(listOf("p2"), opened)
     }
 
     @Test

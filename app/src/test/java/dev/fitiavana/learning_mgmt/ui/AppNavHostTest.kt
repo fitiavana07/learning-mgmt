@@ -9,8 +9,10 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
 import androidx.test.core.app.ApplicationProvider
 import dev.fitiavana.learning_mgmt.AppContainer
 import dev.fitiavana.learning_mgmt.ui.theme.LearningmgmtTheme
@@ -166,6 +168,77 @@ class AppNavHostTest {
 
         waitForText("Phase 1 · Verbs")
         compose.onAllNodesWithText("Phase 2 · Verbs").assertCountEquals(0)
+    }
+
+    @Test
+    fun tappingAPhaseOpensItInManageModeWithoutStatusActions() {
+        openManagePhases()
+        waitForText("Phase 1 · Basics")
+
+        compose.onNodeWithText("Phase 1 · Basics").performClick()
+
+        waitForText("In progress")
+        compose.onNodeWithContentDescription("Edit phase").assertIsDisplayed()
+        compose.onNodeWithText("Mark as completed").assertDoesNotExist()
+    }
+
+    @Test
+    fun editingAPhaseSavesItAndReturnsToItsView() {
+        openManagePhases()
+        waitForText("Phase 1 · Basics")
+        compose.onNodeWithText("Phase 1 · Basics").performClick()
+        waitForText("In progress")
+
+        compose.onNodeWithContentDescription("Edit phase").performClick()
+        waitForText("Edit phase")
+        compose.onNodeWithTag("name-field").performTextReplacement("Foundations")
+        compose.onNodeWithText("Save").performClick()
+
+        waitForText("Phase 1 · Foundations")
+        compose.onNodeWithContentDescription("Edit phase").assertIsDisplayed()
+    }
+
+    @Test
+    fun addingAPhaseCreatesItAtTheEndOfTheList() {
+        openManagePhases()
+        waitForText("Phase 2 · Verbs")
+
+        compose.onNodeWithContentDescription("New phase").performClick()
+        waitForText("New phase")
+        compose.onNodeWithTag("name-field").performTextReplacement("Tenses")
+        compose.onNodeWithText("Save").performClick()
+
+        waitForText("Phase 3 · Tenses")
+        compose.onNodeWithText("Phase 2 · Verbs").assertIsDisplayed()
+    }
+
+    @Test
+    fun savingANewPhaseWithoutANameShowsAnErrorAndStaysInTheEditor() {
+        openManagePhases()
+        waitForText("Phase 2 · Verbs")
+
+        compose.onNodeWithContentDescription("New phase").performClick()
+        waitForText("New phase")
+        compose.onNodeWithText("Save").performClick()
+
+        waitForText("Name can't be blank")
+        compose.onNodeWithTag("name-field").assertIsDisplayed()
+    }
+
+    @Test
+    fun leavingTheEditorWithChangesAsksBeforeDiscarding() {
+        openManagePhases()
+        waitForText("Phase 2 · Verbs")
+        compose.onNodeWithContentDescription("New phase").performClick()
+        waitForText("New phase")
+        compose.onNodeWithTag("name-field").performTextReplacement("Draft")
+
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("Discard changes?").assertIsDisplayed()
+        compose.onNodeWithText("Discard").performClick()
+
+        waitForText("Manage phases")
+        compose.onAllNodesWithText("Phase 3 · Draft").assertCountEquals(0)
     }
 
     @Test
