@@ -44,6 +44,17 @@
     <string name="curricula_delete_title">Delete %1$s?</string>
     <string name="curricula_delete_no_phases">This curriculum has no phases.</string>
     <string name="manage_phases">Manage phases</string>
+    <string name="phases_new">New phase</string>
+    <string name="phases_none_hint">Tap + to add one</string>
+    <string name="editor_title_new">New phase</string>
+    <string name="editor_title_edit">Edit phase</string>
+    <string name="editor_description">Description (markdown)</string>
+    <string name="editor_write">Write</string>
+    <string name="editor_preview">Preview</string>
+    <string name="editor_name_required">Name can\'t be blank</string>
+    <string name="editor_discard_title">Discard changes?</string>
+    <string name="editor_discard_message">Your changes to this phase will be lost.</string>
+    <string name="editor_discard_confirm">Discard</string>
     <string name="phases_options">Options for phase %1$d</string>
     <string name="phases_delete_title">Delete Phase %1$d?</string>
     <string name="phases_delete_message">Later phases are renumbered.</string>
