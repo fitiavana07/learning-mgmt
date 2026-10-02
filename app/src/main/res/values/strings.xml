@@ -3,6 +3,11 @@
 
     <string name="action_cancel">Cancel</string>
     <string name="action_back">Back</string>
+    <string name="action_create">Create</string>
+    <string name="action_save">Save</string>
+    <string name="action_rename">Rename</string>
+    <string name="action_delete">Delete</string>
+    <string name="field_name">Name</string>
     <string name="manage_curricula">Manage curricula</string>
 
     <string name="status_not_started">Not started</string>
@@ -30,4 +35,20 @@
     <string name="home_no_phases_hint">Add some in Manage curricula</string>
 
     <string name="drawer_progress">%1$d/%2$d</string>
+
+    <string name="curricula_none_yet">No curricula yet</string>
+    <string name="curricula_none_hint">Tap + to create one</string>
+    <string name="curricula_new">New curriculum</string>
+    <string name="curricula_rename_title">Rename curriculum</string>
+    <string name="curricula_options">Options for %1$s</string>
+    <string name="curricula_delete_title">Delete %1$s?</string>
+    <string name="curricula_delete_no_phases">This curriculum has no phases.</string>
+    <plurals name="phase_count">
+        <item quantity="one">%1$d phase</item>
+        <item quantity="other">%1$d phases</item>
+    </plurals>
+    <plurals name="curricula_delete_message">
+        <item quantity="one">This also deletes its %1$d phase and its progress.</item>
+        <item quantity="other">This also deletes its %1$d phases and their progress.</item>
+    </plurals>
 </resources>
