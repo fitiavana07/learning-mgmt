@@ -46,6 +46,7 @@ fun AppDrawerContent(
                     label = { CurriculumEntry(item) },
                     selected = item.selected,
                     onClick = { onSelect(item.id) },
+                    shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
                 )
             }
