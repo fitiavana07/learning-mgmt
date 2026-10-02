@@ -100,6 +100,8 @@ dependencies {
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.junit)
     testImplementation(libs.androidx.compose.ui.test.junit4)
+    // Compose's UI test pulls an Espresso too old for the SDK Robolectric runs on.
+    testImplementation(libs.androidx.espresso.core)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)

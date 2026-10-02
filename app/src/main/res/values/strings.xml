@@ -1,3 +1,22 @@
 <resources>
     <string name="app_name">learning-mgmt</string>
+
+    <string name="action_cancel">Cancel</string>
+
+    <string name="status_not_started">Not started</string>
+    <string name="status_in_progress">In progress</string>
+    <string name="status_completed">Completed</string>
+
+    <string name="phase_title">Phase %1$d · %2$s</string>
+
+    <string name="home_action_complete">Mark as completed</string>
+    <string name="home_action_start">Start Phase %1$d</string>
+    <string name="home_complete_dialog_title">Mark Phase %1$d as completed?</string>
+    <string name="home_complete_dialog_confirm">Complete</string>
+    <string name="home_ready_to_begin">Ready to begin?</string>
+    <string name="home_all_completed">All phases completed</string>
+    <string name="home_no_curricula">Create your first curriculum</string>
+    <string name="home_no_phases">No phases yet</string>
+    <string name="home_no_phases_hint">Add some in Manage curricula</string>
+    <string name="home_manage_curricula">Manage curricula</string>
 </resources>
