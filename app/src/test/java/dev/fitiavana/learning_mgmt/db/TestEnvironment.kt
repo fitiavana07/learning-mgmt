@@ -1,5 +1,7 @@
 package dev.fitiavana.learning_mgmt.db
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dev.fitiavana.learning_mgmt.features.curricula.CurriculumRepository
 import dev.fitiavana.learning_mgmt.features.phases.PhaseRepository
 import dev.fitiavana.learning_mgmt.features.progress.ProgressRepository
@@ -23,6 +25,7 @@ import java.nio.file.Files
 @OptIn(ExperimentalCoroutinesApi::class)
 class TestEnvironment : ExternalResource() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val viewModels = mutableListOf<ViewModel>()
 
     lateinit var db: AppDatabase
     lateinit var curricula: CurriculumRepository
@@ -42,7 +45,11 @@ class TestEnvironment : ExternalResource() {
         )
     }
 
+    /** Registers a ViewModel so its coroutines are cancelled when the test ends. */
+    fun <T : ViewModel> track(viewModel: T): T = viewModel.also { viewModels += it }
+
     override fun after() {
+        viewModels.forEach { it.viewModelScope.cancel() }
         db.close()
         scope.cancel()
         Dispatchers.resetMain()

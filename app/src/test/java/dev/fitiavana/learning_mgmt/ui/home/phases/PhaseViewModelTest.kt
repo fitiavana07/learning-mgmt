@@ -31,7 +31,7 @@ class PhaseViewModelTest {
         second = env.phases.add(curriculumId, "Verbs", "")
     }
 
-    private fun viewModel(phaseId: String) = PhaseViewModel(phaseId, env.selection, env.progress)
+    private fun viewModel(phaseId: String) = env.track(PhaseViewModel(phaseId, env.selection, env.progress))
 
     private suspend fun PhaseViewModel.loaded(predicate: (PhaseViewState.Loaded) -> Boolean = { true }) =
         withTimeout(10_000) {

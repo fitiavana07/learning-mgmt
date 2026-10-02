@@ -21,7 +21,7 @@ class PhasesViewModelTest {
 
     @Before
     fun setUp() {
-        viewModel = PhasesViewModel(env.selection, env.progress)
+        viewModel = env.track(PhasesViewModel(env.selection, env.progress))
     }
 
     private suspend fun stateWhere(predicate: (PhasesUiState) -> Boolean) =
