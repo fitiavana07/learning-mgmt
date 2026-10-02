@@ -15,6 +15,12 @@ class ProgressRepository(
     fun observe(curriculumId: String): Flow<List<PhaseWithStatus>> =
         statusDao.observeRowsByCurriculum(curriculumId).map { rows -> rows.map { it.toPhaseWithStatus() } }
 
+    /** Phases with status of every curriculum that has any, keyed by curriculum id, in number order. */
+    fun observeAll(): Flow<Map<String, List<PhaseWithStatus>>> =
+        statusDao.observeAllRows().map { rows ->
+            rows.map { it.toPhaseWithStatus() }.groupBy { it.phase.curriculumId }
+        }
+
     suspend fun start(phaseId: String) =
         transition(phaseId, Status.IN_PROGRESS, PhaseRules::canStart, "start")
 

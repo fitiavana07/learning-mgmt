@@ -54,6 +54,22 @@ class ProgressRepositoryTest {
     }
 
     @Test
+    fun observeAllGroupsPhasesByCurriculumInOrder() = runBlocking {
+        val piano = CurriculumRepository(db.curriculumDao(), sequentialIds("o")).create("Piano")
+        PhaseRepository(db, db.phaseDao(), sequentialIds("q")).add(piano, "Scales", "")
+        progress.start(p1)
+
+        val all = progress.observeAll().first()
+
+        assertEquals(setOf(curriculumId, piano), all.keys)
+        assertEquals(
+            listOf(1 to Status.IN_PROGRESS, 2 to Status.NOT_STARTED, 3 to Status.NOT_STARTED),
+            all.getValue(curriculumId).map { it.phase.number to it.status },
+        )
+        assertEquals(listOf(Status.NOT_STARTED), all.getValue(piano).map { it.status })
+    }
+
+    @Test
     fun startMarksTheFirstPhaseInProgress() = runBlocking {
         progress.start(p1)
 

@@ -2,18 +2,14 @@ package dev.fitiavana.learning_mgmt.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.fitiavana.learning_mgmt.features.curricula.CurriculumRepository
 import dev.fitiavana.learning_mgmt.features.phases.Phase
 import dev.fitiavana.learning_mgmt.features.progress.PhaseRules
 import dev.fitiavana.learning_mgmt.features.progress.PhaseWithStatus
 import dev.fitiavana.learning_mgmt.features.progress.ProgressRepository
-import dev.fitiavana.learning_mgmt.features.selection.LaunchSelection
-import dev.fitiavana.learning_mgmt.features.selection.SelectedCurriculumStore
+import dev.fitiavana.learning_mgmt.features.selection.CurriculumSelection
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -41,15 +37,11 @@ data class HomeUiState(val curriculumName: String?, val content: HomeContent)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModel(
-    curricula: CurriculumRepository,
-    selection: SelectedCurriculumStore,
+    selection: CurriculumSelection,
     private val progress: ProgressRepository,
 ) : ViewModel() {
     val uiState: StateFlow<HomeUiState> =
-        combine(curricula.observeAll(), selection.selectedId) { all, storedId ->
-            LaunchSelection.resolve(storedId, all.map { it.id })?.let { id -> all.first { it.id == id } }
-        }
-            .distinctUntilChanged()
+        selection.selected
             .flatMapLatest { curriculum ->
                 if (curriculum == null) {
                     flowOf(HomeUiState(null, HomeContent.NoCurricula))

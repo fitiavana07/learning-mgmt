@@ -23,11 +23,7 @@ class MainActivity : ComponentActivity() {
                 val home: HomeViewModel = viewModel(
                     factory = viewModelFactory {
                         initializer {
-                            HomeViewModel(
-                                container.curriculumRepository,
-                                container.selectedCurriculumStore,
-                                container.progressRepository,
-                            )
+                            HomeViewModel(container.curriculumSelection, container.progressRepository)
                         }
                     },
                 )

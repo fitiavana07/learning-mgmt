@@ -8,6 +8,7 @@ import dev.fitiavana.learning_mgmt.db.AppDatabase
 import dev.fitiavana.learning_mgmt.features.curricula.CurriculumRepository
 import dev.fitiavana.learning_mgmt.features.phases.PhaseRepository
 import dev.fitiavana.learning_mgmt.features.progress.ProgressRepository
+import dev.fitiavana.learning_mgmt.features.selection.CurriculumSelection
 import dev.fitiavana.learning_mgmt.features.selection.SelectedCurriculumStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,9 +22,11 @@ class AppContainer(context: Context) {
     val phaseRepository = PhaseRepository(database, database.phaseDao())
     val progressRepository = ProgressRepository(database, database.phaseDao(), database.phaseStatusDao())
 
-    val selectedCurriculumStore = SelectedCurriculumStore(
+    private val selectedCurriculumStore = SelectedCurriculumStore(
         PreferenceDataStoreFactory.create(scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)) {
             context.preferencesDataStoreFile("selection")
         },
     )
+
+    val curriculumSelection = CurriculumSelection(curriculumRepository, selectedCurriculumStore)
 }

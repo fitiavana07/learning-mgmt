@@ -7,6 +7,7 @@ import dev.fitiavana.learning_mgmt.features.curricula.CurriculumRepository
 import dev.fitiavana.learning_mgmt.features.phases.Phase
 import dev.fitiavana.learning_mgmt.features.phases.PhaseRepository
 import dev.fitiavana.learning_mgmt.features.progress.ProgressRepository
+import dev.fitiavana.learning_mgmt.features.selection.CurriculumSelection
 import dev.fitiavana.learning_mgmt.features.selection.SelectedCurriculumStore
 import dev.fitiavana.learning_mgmt.features.selection.testSelectionStore
 import kotlinx.coroutines.CoroutineScope
@@ -50,7 +51,10 @@ class HomeViewModelTest {
         curricula = CurriculumRepository(db.curriculumDao(), sequentialIds("c"))
         phases = PhaseRepository(db, db.phaseDao(), sequentialIds("p"))
         store = testSelectionStore(folder.root, scope)
-        viewModel = HomeViewModel(curricula, store, ProgressRepository(db, db.phaseDao(), db.phaseStatusDao()))
+        viewModel = HomeViewModel(
+            CurriculumSelection(curricula, store),
+            ProgressRepository(db, db.phaseDao(), db.phaseStatusDao()),
+        )
     }
 
     @After

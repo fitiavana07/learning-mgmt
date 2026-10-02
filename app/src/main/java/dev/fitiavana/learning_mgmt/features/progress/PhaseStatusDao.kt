@@ -13,6 +13,15 @@ interface PhaseStatusDao {
     @Query(ROWS_BY_CURRICULUM)
     suspend fun getRowsByCurriculum(curriculumId: String): List<PhaseStatusRow>
 
+    @Query(
+        """
+        SELECT phase.*, phase_status.status AS status
+        FROM phase LEFT JOIN phase_status ON phase_status.phaseId = phase.id
+        ORDER BY phase.curriculumId, phase.number
+        """,
+    )
+    fun observeAllRows(): Flow<List<PhaseStatusRow>>
+
     @Upsert
     suspend fun upsert(status: PhaseStatus)
 
