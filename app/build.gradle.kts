@@ -1,7 +1,20 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { load(it) }
+    }
+}
+
+// Signing credentials come only from local.properties — no env var fallback.
+fun signingProperty(localKey: String): String? =
+    localProperties.getProperty(localKey)?.takeIf { it.isNotBlank() }
 
 android {
     namespace = "dev.fitiavana.learning_mgmt"
@@ -19,8 +32,28 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            val storeFilePath = signingProperty("android.keystore.path")
+            val storePwd = signingProperty("android.keystore.password")
+            val keyAliasProp = signingProperty("android.key.alias")
+            val keyPwd = signingProperty("android.key.password")
+            if (storeFilePath != null && storePwd != null && keyAliasProp != null && keyPwd != null) {
+                storeFile = file(storeFilePath)
+                storePassword = storePwd
+                keyAlias = keyAliasProp
+                keyPassword = keyPwd
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+        }
         release {
+            signingConfig = signingConfigs.getByName("release")
             optimization {
                 enable = false
             }
