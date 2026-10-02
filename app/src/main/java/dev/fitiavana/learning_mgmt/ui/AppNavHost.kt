@@ -21,10 +21,15 @@ import dev.fitiavana.learning_mgmt.ui.home.phases.PhasesScreen
 import dev.fitiavana.learning_mgmt.ui.home.phases.PhasesViewModel
 import dev.fitiavana.learning_mgmt.ui.managecurricula.ManageCurriculaScreen
 import dev.fitiavana.learning_mgmt.ui.managecurricula.ManageCurriculaViewModel
+import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.ManagePhasesScreen
+import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.ManagePhasesViewModel
 
 private object Routes {
     const val HOME = "home"
     const val MANAGE_CURRICULA = "manage-curricula"
+    const val CURRICULUM_ID = "curriculumId"
+    const val MANAGE_PHASES = "manage-curricula/{$CURRICULUM_ID}"
+    fun managePhases(curriculumId: String) = "manage-curricula/$curriculumId"
     const val PHASES = "phases"
     const val PHASE_ID = "phaseId"
     const val PHASE = "phases/{$PHASE_ID}"
@@ -73,7 +78,32 @@ fun AppNavHost(container: AppContainer) {
                 onCreate = manage::create,
                 onRename = manage::rename,
                 onDelete = manage::delete,
-                onCurriculumClick = {}, // Managing a curriculum's phases arrives in the next slice.
+                onCurriculumClick = { navController.navigate(Routes.managePhases(it)) },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(
+            Routes.MANAGE_PHASES,
+            arguments = listOf(navArgument(Routes.CURRICULUM_ID) { type = NavType.StringType }),
+        ) { entry ->
+            val curriculumId = checkNotNull(entry.arguments?.getString(Routes.CURRICULUM_ID))
+            val manage: ManagePhasesViewModel = viewModel(
+                factory = viewModelFactory {
+                    initializer {
+                        ManagePhasesViewModel(
+                            curriculumId,
+                            container.curriculumRepository,
+                            container.progressRepository,
+                            container.phaseRepository,
+                        )
+                    }
+                },
+            )
+            val state by manage.uiState.collectAsStateWithLifecycle()
+            ManagePhasesScreen(
+                state = state,
+                onDelete = manage::delete,
+                onMove = manage::move,
                 onBack = { navController.popBackStack() },
             )
         }

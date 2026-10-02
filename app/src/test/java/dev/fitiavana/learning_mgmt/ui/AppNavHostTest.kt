@@ -140,6 +140,43 @@ class AppNavHostTest {
         waitForText("Piano")
     }
 
+    private fun openManagePhases() {
+        openManageCurricula()
+        compose.onNodeWithText("Spanish").performClick()
+        waitForText("Manage phases")
+    }
+
+    @Test
+    fun tappingACurriculumOpensItsPhasesInOrder() {
+        openManagePhases()
+
+        compose.onNodeWithText("Spanish").assertIsDisplayed()
+        waitForText("Phase 2 · Verbs")
+        compose.onNodeWithText("Phase 1 · Basics").assertIsDisplayed()
+    }
+
+    @Test
+    fun deletingAPhaseFromManagePhasesRemovesItAndRenumbers() {
+        openManagePhases()
+        waitForText("Phase 2 · Verbs")
+
+        compose.onNodeWithContentDescription("Options for phase 1").performClick()
+        compose.onNodeWithText("Delete").performClick()
+        compose.onNode(hasText("Delete") and hasClickAction()).performClick()
+
+        waitForText("Phase 1 · Verbs")
+        compose.onAllNodesWithText("Phase 2 · Verbs").assertCountEquals(0)
+    }
+
+    @Test
+    fun backFromManagePhasesReturnsToManageCurricula() {
+        openManagePhases()
+
+        compose.onNodeWithContentDescription("Back").performClick()
+
+        waitForText("2 phases")
+    }
+
     @Test
     fun backFromManageCurriculaReturnsToHome() {
         openManageCurricula()
