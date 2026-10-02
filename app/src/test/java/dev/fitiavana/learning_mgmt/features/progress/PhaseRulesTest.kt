@@ -72,6 +72,42 @@ class PhaseRulesTest {
     }
 
     @Test
+    fun actionIsCompleteForTheInProgressPhase() {
+        val phases = listOf(p(1, completed), p(2, inProgress), p(3, notStarted))
+
+        assertEquals(PhaseAction.Complete, PhaseRules.actionFor(phases, phases[1]))
+    }
+
+    @Test
+    fun actionIsStartForTheNextPhase() {
+        val phases = listOf(p(1, completed), p(2, notStarted), p(3, notStarted))
+
+        assertEquals(PhaseAction.Start, PhaseRules.actionFor(phases, phases[1]))
+    }
+
+    @Test
+    fun otherPhasesWaitForTheInProgressPhaseToBeCompleted() {
+        val phases = listOf(p(1, inProgress), p(2, notStarted), p(3, notStarted))
+
+        assertEquals(PhaseAction.WaitForCompletion(phases[0].phase), PhaseRules.actionFor(phases, phases[1]))
+        assertEquals(PhaseAction.WaitForCompletion(phases[0].phase), PhaseRules.actionFor(phases, phases[2]))
+    }
+
+    @Test
+    fun laterPhasesWaitForTheNextPhaseToBeStartedWhenNothingIsInProgress() {
+        val phases = listOf(p(1, completed), p(2, notStarted), p(3, notStarted))
+
+        assertEquals(PhaseAction.WaitForStart(phases[1].phase), PhaseRules.actionFor(phases, phases[2]))
+    }
+
+    @Test
+    fun completedPhasesHaveNoAction() {
+        val phases = listOf(p(1, completed), p(2, notStarted))
+
+        assertEquals(PhaseAction.None, PhaseRules.actionFor(phases, phases[0]))
+    }
+
+    @Test
     fun onlyTheInProgressPhaseCanBeCompleted() {
         val phases = listOf(p(1, completed), p(2, inProgress), p(3, notStarted))
 

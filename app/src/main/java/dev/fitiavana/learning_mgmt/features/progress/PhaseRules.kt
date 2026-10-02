@@ -15,4 +15,17 @@ object PhaseRules {
 
     fun canComplete(phases: List<PhaseWithStatus>, target: PhaseWithStatus): Boolean =
         current(phases)?.phase?.id == target.phase.id
+
+    fun actionFor(phases: List<PhaseWithStatus>, target: PhaseWithStatus): PhaseAction {
+        val current = current(phases)
+        val next = nextToStart(phases)
+        return when {
+            canComplete(phases, target) -> PhaseAction.Complete
+            canStart(phases, target) -> PhaseAction.Start
+            target.status != Status.NOT_STARTED -> PhaseAction.None
+            current != null -> PhaseAction.WaitForCompletion(current.phase)
+            next != null -> PhaseAction.WaitForStart(next.phase)
+            else -> PhaseAction.None
+        }
+    }
 }
