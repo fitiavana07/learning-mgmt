@@ -3,6 +3,8 @@ package dev.fitiavana.learning_mgmt.ui
 import android.content.Context
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -36,7 +38,7 @@ class AppNavHostTest {
         container.phaseRepository.add(spanish, "Verbs", "")
         container.progressRepository.start(basics)
         compose.setContent {
-            LearningmgmtTheme { AppNavHost(container = container, onManageCurricula = {}) }
+            LearningmgmtTheme { AppNavHost(container = container) }
         }
     }
 
@@ -91,6 +93,41 @@ class AppNavHostTest {
 
         waitForText("Start Phase 2")
         compose.onNodeWithText("Ready to begin?").assertIsDisplayed()
+    }
+
+    private fun openManageCurricula() {
+        waitForText("Mark as completed")
+        compose.onNodeWithContentDescription("Open menu").performClick()
+        compose.onNodeWithText("Manage curricula").performClick()
+        waitForText("2 phases")
+    }
+
+    @Test
+    fun drawerButtonOpensManageCurriculaListingCurriculaWithPhaseCounts() {
+        openManageCurricula()
+
+        compose.onNodeWithText("Spanish").assertIsDisplayed()
+        compose.onNodeWithText("2 phases").assertIsDisplayed()
+    }
+
+    @Test
+    fun deletingTheOnlyCurriculumFromManageCurriculaShowsTheEmptyList() {
+        openManageCurricula()
+
+        compose.onNodeWithContentDescription("Options for Spanish").performClick()
+        compose.onNodeWithText("Delete").performClick()
+        compose.onNode(hasText("Delete") and hasClickAction()).performClick()
+
+        waitForText("No curricula yet")
+    }
+
+    @Test
+    fun backFromManageCurriculaReturnsToHome() {
+        openManageCurricula()
+
+        compose.onNodeWithContentDescription("Back").performClick()
+
+        waitForText("Mark as completed")
     }
 
     @Test

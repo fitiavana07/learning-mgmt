@@ -14,10 +14,7 @@ class MainActivity : ComponentActivity() {
         val container = (application as LearningMgmtApplication).container
         setContent {
             LearningmgmtTheme {
-                AppNavHost(
-                    container = container,
-                    onManageCurricula = {}, // Manage curricula arrives in a later slice.
-                )
+                AppNavHost(container)
             }
         }
     }

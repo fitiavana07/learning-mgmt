@@ -19,9 +19,12 @@ import dev.fitiavana.learning_mgmt.ui.home.phases.PhaseViewModel
 import dev.fitiavana.learning_mgmt.ui.home.phases.PhaseViewScreen
 import dev.fitiavana.learning_mgmt.ui.home.phases.PhasesScreen
 import dev.fitiavana.learning_mgmt.ui.home.phases.PhasesViewModel
+import dev.fitiavana.learning_mgmt.ui.managecurricula.ManageCurriculaScreen
+import dev.fitiavana.learning_mgmt.ui.managecurricula.ManageCurriculaViewModel
 
 private object Routes {
     const val HOME = "home"
+    const val MANAGE_CURRICULA = "manage-curricula"
     const val PHASES = "phases"
     const val PHASE_ID = "phaseId"
     const val PHASE = "phases/{$PHASE_ID}"
@@ -30,7 +33,7 @@ private object Routes {
 
 /** The navigation graph; each destination gets its ViewModel from [container]. */
 @Composable
-fun AppNavHost(container: AppContainer, onManageCurricula: () -> Unit) {
+fun AppNavHost(container: AppContainer) {
     val navController = rememberNavController()
 
     NavHost(navController, startDestination = Routes.HOME) {
@@ -54,8 +57,24 @@ fun AppNavHost(container: AppContainer, onManageCurricula: () -> Unit) {
             HomeRoute(
                 home = home,
                 drawer = drawer,
-                onManageCurricula = onManageCurricula,
+                onManageCurricula = { navController.navigate(Routes.MANAGE_CURRICULA) },
                 onShowPhases = { navController.navigate(Routes.PHASES) },
+            )
+        }
+        composable(Routes.MANAGE_CURRICULA) {
+            val manage: ManageCurriculaViewModel = viewModel(
+                factory = viewModelFactory {
+                    initializer { ManageCurriculaViewModel(container.curriculumRepository, container.progressRepository) }
+                },
+            )
+            val rows by manage.rows.collectAsStateWithLifecycle()
+            ManageCurriculaScreen(
+                rows = rows,
+                onCreate = manage::create,
+                onRename = manage::rename,
+                onDelete = manage::delete,
+                onCurriculumClick = {}, // Managing a curriculum's phases arrives in the next slice.
+                onBack = { navController.popBackStack() },
             )
         }
         composable(Routes.PHASES) {
