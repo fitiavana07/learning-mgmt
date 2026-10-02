@@ -3,7 +3,9 @@ package dev.fitiavana.learning_mgmt.ui.home.phases
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -25,6 +27,8 @@ fun PhaseViewScreen(
     onStart: () -> Unit,
     onComplete: () -> Unit,
     onBack: () -> Unit,
+    /** Manage mode: shows an edit button for the phase. Null in read mode. */
+    onEdit: (() -> Unit)? = null,
 ) {
     Scaffold(
         topBar = {
@@ -36,6 +40,13 @@ fun PhaseViewScreen(
                     }
                 },
             )
+        },
+        floatingActionButton = {
+            if (onEdit != null && state is PhaseViewState.Loaded) {
+                FloatingActionButton(onClick = onEdit) {
+                    Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.editor_title_edit))
+                }
+            }
         },
         bottomBar = {
             if (state is PhaseViewState.Loaded) {

@@ -30,7 +30,9 @@ class PhaseViewScreenTest {
     private fun phase(number: Int, name: String, status: Status, description: String = "") =
         PhaseWithStatus(Phase("p$number", "c", number, name, description), status)
 
-    private fun show(state: PhaseViewState) {
+    private var edited = 0
+
+    private fun show(state: PhaseViewState, editable: Boolean = false) {
         compose.setContent {
             LearningmgmtTheme {
                 PhaseViewScreen(
@@ -38,9 +40,33 @@ class PhaseViewScreenTest {
                     onStart = { started++ },
                     onComplete = { completed++ },
                     onBack = { back++ },
+                    onEdit = if (editable) ({ edited++ }) else null,
                 )
             }
         }
+    }
+
+    @Test
+    fun hasNoEditButtonInReadMode() {
+        show(PhaseViewState.Loaded(phase(1, "Basics", Status.NOT_STARTED), PhaseAction.Start))
+
+        compose.onNodeWithContentDescription("Edit phase").assertDoesNotExist()
+    }
+
+    @Test
+    fun editButtonIsReportedInManageMode() {
+        show(PhaseViewState.Loaded(phase(1, "Basics", Status.NOT_STARTED), PhaseAction.None), editable = true)
+
+        compose.onNodeWithContentDescription("Edit phase").performClick()
+
+        assertEquals(1, edited)
+    }
+
+    @Test
+    fun editButtonIsHiddenWhenThePhaseIsMissing() {
+        show(PhaseViewState.NotFound, editable = true)
+
+        compose.onNodeWithContentDescription("Edit phase").assertDoesNotExist()
     }
 
     @Test
