@@ -9,8 +9,12 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,13 +42,21 @@ fun HomeScreen(
     onStart: () -> Unit,
     onComplete: () -> Unit,
     onManageCurricula: () -> Unit,
+    onOpenMenu: () -> Unit,
 ) {
     var confirmingCompletion by remember { mutableStateOf(false) }
     val content = state.content
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(state.curriculumName ?: stringResource(R.string.app_name)) })
+            TopAppBar(
+                title = { Text(state.curriculumName ?: stringResource(R.string.app_name)) },
+                navigationIcon = {
+                    IconButton(onClick = onOpenMenu) {
+                        Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.home_open_menu))
+                    }
+                },
+            )
         },
         bottomBar = {
             when (content) {

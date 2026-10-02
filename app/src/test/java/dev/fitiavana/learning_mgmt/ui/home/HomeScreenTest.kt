@@ -3,6 +3,7 @@ package dev.fitiavana.learning_mgmt.ui.home
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import dev.fitiavana.learning_mgmt.features.phases.Phase
@@ -21,6 +22,7 @@ class HomeScreenTest {
     private var started = 0
     private var completed = 0
     private var managed = 0
+    private var menuOpened = 0
 
     private fun show(state: HomeUiState) {
         compose.setContent {
@@ -30,6 +32,7 @@ class HomeScreenTest {
                     onStart = { started++ },
                     onComplete = { completed++ },
                     onManageCurricula = { managed++ },
+                    onOpenMenu = { menuOpened++ },
                 )
             }
         }
@@ -121,6 +124,15 @@ class HomeScreenTest {
         show(HomeUiState("Spanish", HomeContent.AllCompleted))
 
         compose.onNodeWithText("All phases completed").assertIsDisplayed()
+    }
+
+    @Test
+    fun menuButtonOpensTheDrawer() {
+        show(HomeUiState("Spanish", HomeContent.AllCompleted))
+
+        compose.onNodeWithContentDescription("Open menu").performClick()
+
+        assertEquals(1, menuOpened)
     }
 
     @Test
