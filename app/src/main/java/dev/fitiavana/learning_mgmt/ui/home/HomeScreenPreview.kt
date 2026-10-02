@@ -34,6 +34,6 @@ private class HomeStates : PreviewParameterProvider<HomeUiState> {
 @Composable
 private fun HomeScreenPreview(@PreviewParameter(HomeStates::class) state: HomeUiState) {
     LearningmgmtTheme {
-        HomeScreen(state = state, onStart = {}, onComplete = {}, onManageCurricula = {}, onOpenMenu = {})
+        HomeScreen(state = state, onStart = {}, onComplete = {}, onManageCurricula = {}, onOpenMenu = {}, onShowPhases = {})
     }
 }

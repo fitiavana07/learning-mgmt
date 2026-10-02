@@ -64,6 +64,7 @@ class HomeRouteTest {
                     home = HomeViewModel(selection, progress),
                     drawer = DrawerViewModel(curricula, selection, progress),
                     onManageCurricula = { managed++ },
+                    onShowPhases = {},
                 )
             }
         }

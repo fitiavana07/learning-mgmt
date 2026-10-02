@@ -39,6 +39,7 @@ class MainActivity : ComponentActivity() {
                     home = home,
                     drawer = drawer,
                     onManageCurricula = {}, // Manage curricula arrives in a later slice.
+                    onShowPhases = {}, // Wired by the navigation graph in this slice.
                 )
             }
         }

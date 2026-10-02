@@ -1,17 +1,13 @@
 package dev.fitiavana.learning_mgmt.ui.home
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,13 +22,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import dev.fitiavana.learning_mgmt.R
-import dev.fitiavana.learning_mgmt.features.phases.Phase
+import dev.fitiavana.learning_mgmt.features.progress.PhaseAction
 import dev.fitiavana.learning_mgmt.features.progress.Status
-import dev.fitiavana.learning_mgmt.ui.common.ConfirmDialog
 import dev.fitiavana.learning_mgmt.ui.common.EmptyState
-import dev.fitiavana.learning_mgmt.ui.common.MarkdownText
+import dev.fitiavana.learning_mgmt.ui.common.PhaseActionBar
+import dev.fitiavana.learning_mgmt.ui.common.PhaseContent
 import dev.fitiavana.learning_mgmt.ui.common.StatusChip
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,8 +38,8 @@ fun HomeScreen(
     onComplete: () -> Unit,
     onManageCurricula: () -> Unit,
     onOpenMenu: () -> Unit,
+    onShowPhases: () -> Unit,
 ) {
-    var confirmingCompletion by remember { mutableStateOf(false) }
     val content = state.content
 
     Scaffold(
@@ -56,18 +51,13 @@ fun HomeScreen(
                         Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.home_open_menu))
                     }
                 },
+                actions = { OverflowMenu(onShowPhases) },
             )
         },
         bottomBar = {
             when (content) {
-                is HomeContent.InProgress -> BottomAction(
-                    label = stringResource(R.string.home_action_complete),
-                    onClick = { confirmingCompletion = true },
-                )
-                is HomeContent.ReadyToStart -> BottomAction(
-                    label = stringResource(R.string.home_action_start, content.phase.number),
-                    onClick = onStart,
-                )
+                is HomeContent.InProgress -> PhaseActionBar(content.phase, PhaseAction.Complete, onStart, onComplete)
+                is HomeContent.ReadyToStart -> PhaseActionBar(content.phase, PhaseAction.Start, onStart, onComplete)
                 else -> Unit
             }
         },
@@ -94,38 +84,21 @@ fun HomeScreen(
             }
         }
     }
+}
 
-    if (confirmingCompletion && content is HomeContent.InProgress) {
-        ConfirmDialog(
-            title = stringResource(R.string.home_complete_dialog_title, content.phase.number),
-            confirmLabel = stringResource(R.string.home_complete_dialog_confirm),
-            onConfirm = {
-                confirmingCompletion = false
-                onComplete()
+@Composable
+private fun OverflowMenu(onShowPhases: () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    IconButton(onClick = { expanded = true }) {
+        Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.home_more_options))
+    }
+    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.phases_title)) },
+            onClick = {
+                expanded = false
+                onShowPhases()
             },
-            onDismiss = { confirmingCompletion = false },
         )
     }
-}
-
-@Composable
-private fun PhaseContent(phase: Phase, header: @Composable () -> Unit) {
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
-        header()
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = stringResource(R.string.phase_title, phase.number, phase.name),
-            style = MaterialTheme.typography.headlineSmall,
-        )
-        Spacer(Modifier.height(16.dp))
-        MarkdownText(phase.description)
-    }
-}
-
-@Composable
-private fun BottomAction(label: String, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp),
-    ) { Text(label) }
 }

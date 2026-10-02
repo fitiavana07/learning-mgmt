@@ -23,6 +23,7 @@ class HomeScreenTest {
     private var completed = 0
     private var managed = 0
     private var menuOpened = 0
+    private var phasesShown = 0
 
     private fun show(state: HomeUiState) {
         compose.setContent {
@@ -33,6 +34,7 @@ class HomeScreenTest {
                     onComplete = { completed++ },
                     onManageCurricula = { managed++ },
                     onOpenMenu = { menuOpened++ },
+                    onShowPhases = { phasesShown++ },
                 )
             }
         }
@@ -133,6 +135,17 @@ class HomeScreenTest {
         compose.onNodeWithContentDescription("Open menu").performClick()
 
         assertEquals(1, menuOpened)
+    }
+
+    @Test
+    fun overflowMenuLeadsToThePhasesList() {
+        show(HomeUiState("Spanish", HomeContent.AllCompleted))
+
+        compose.onNodeWithText("Phases").assertDoesNotExist()
+        compose.onNodeWithContentDescription("More options").performClick()
+        compose.onNodeWithText("Phases").performClick()
+
+        assertEquals(1, phasesShown)
     }
 
     @Test
