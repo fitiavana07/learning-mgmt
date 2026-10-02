@@ -1,6 +1,7 @@
 package dev.fitiavana.learning_mgmt.ui
 
 import android.content.Context
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasClickAction
@@ -119,6 +120,24 @@ class AppNavHostTest {
         compose.onNode(hasText("Delete") and hasClickAction()).performClick()
 
         waitForText("No curricula yet")
+    }
+
+    @Test
+    fun deletingTheSelectedCurriculumFallsBackToTheFirstRemainingOne() {
+        runBlocking { container.curriculumRepository.create("Piano") }
+        openManageCurricula()
+
+        compose.onNodeWithContentDescription("Options for Spanish").performClick()
+        compose.onNodeWithText("Delete").performClick()
+        compose.onNode(hasText("Delete") and hasClickAction()).performClick()
+        compose.waitUntil(5_000) {
+            compose.onAllNodesWithText("Spanish").fetchSemanticsNodes().isEmpty()
+        }
+        compose.onNodeWithContentDescription("Back").performClick()
+
+        waitForText("No phases yet")
+        compose.onAllNodesWithText("Spanish").assertCountEquals(0)
+        waitForText("Piano")
     }
 
     @Test
