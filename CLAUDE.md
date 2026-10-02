@@ -5,10 +5,25 @@ code in this repository.
 
 ## Project
 
-Android app (Kotlin, Jetpack Compose, Material3) — currently the unmodified
-Android Studio "Empty Activity" template: a single `MainActivity` showing a
-`Greeting` composable, plus theme files in `ui/theme/`. Single Gradle module
-`:app`, package `dev.fitiavana.learning_mgmt`.
+Android app (Kotlin, Jetpack Compose, Material3) for tracking learning
+curricula made of ordered phases. Home shows the in-progress phase of the
+selected curriculum (rendered markdown); a drawer switches curricula; "Manage
+curricula" is the only place for structure edits (curricula, phases, reorder,
+phase editor). Single Gradle module `:app`, package
+`dev.fitiavana.learning_mgmt`.
+
+Architecture (details in the approved plan):
+- `features/{curricula,phases,progress,selection}`: Room entities, DAOs,
+  repositories and pure rules. `phases` is structure only and `progress` is
+  progress only, so a structure-only export stays possible.
+- `ui/`: screens and ViewModels, nested by navigation flow (`home`,
+  `managecurricula/managephases/phaseeditor`), shared composables in
+  `ui/common`, navigation graph in `ui/AppNavHost.kt`.
+- Manual dependency injection: `AppContainer` (no DI framework), ViewModels
+  created with `viewModelFactory { initializer { ... } }`.
+- Ids are UUID strings generated in app code (`IdGenerator`).
+- Theme: light and dark Indigo schemes chosen only by the system setting (no
+  dynamic color, no in-app toggle).
 
 ## Commands
 
@@ -50,6 +65,18 @@ source code.
   write a failing test first, verify it actually fails by running the test
   command, then write the minimum code to make it pass, then refactor. Never
   write production code before there is a test that requires it.
+- **Never run instrumented or device tests** (`connectedAndroidTest` or
+  anything needing a device/emulator), and do not write them. Use Robolectric
+  (`@RunWith(RobolectricTestRunner::class)`) for Android-dependent tests on the
+  JVM: real in-memory Room via `TestEnvironment`, and Compose UI tests with
+  `createComposeRule()`.
+- Robolectric limitation: a text field inside a dialog window never lets
+  Compose go idle (the test hangs), so such dialogs (create/rename) are checked
+  manually. Text fields in a regular screen work.
+- Compose test tips: markdown renders off the main thread, so
+  `compose.waitUntil { ... }` before asserting on it. The closed drawer is
+  still composed, so Home texts can appear twice; use `onAllNodesWithText(...)`.
+  Use `@Config(qualifiers = "w360dp-h800dp")` for scrolling lists.
 
 ## UI
 
