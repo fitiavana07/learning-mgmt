@@ -1,5 +1,10 @@
 package dev.fitiavana.learning_mgmt.ui
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -7,6 +12,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NamedNavArgument
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -54,6 +61,32 @@ private val managedPhaseArguments = curriculumArguments +
 private fun NavBackStackEntry.curriculumId() = checkNotNull(arguments?.getString(Routes.CURRICULUM_ID))
 private fun NavBackStackEntry.phaseId() = checkNotNull(arguments?.getString(Routes.PHASE_ID))
 
+private const val SLIDE_MS = 300
+private const val BEHIND_FRACTION = 4
+
+/** The incoming screen travels the full width; the one it covers only shifts a fraction. */
+private fun slideIn(fromEnd: Boolean) = slideInHorizontally(tween(SLIDE_MS)) { if (fromEnd) it else -it / BEHIND_FRACTION }
+
+private fun slideOut(toStart: Boolean) = slideOutHorizontally(tween(SLIDE_MS)) { if (toStart) -it / BEHIND_FRACTION else it }
+
+/**
+ * A destination that slides. Only used for the phase screens: Home <-> Manage curricula
+ * must stay instant (a crossfade there blanked the window when the drawer opened mid-animation).
+ */
+private fun NavGraphBuilder.animatedComposable(
+    route: String,
+    arguments: List<NamedNavArgument> = emptyList(),
+    content: @Composable (NavBackStackEntry) -> Unit,
+) = composable(
+    route,
+    arguments = arguments,
+    enterTransition = { slideIn(fromEnd = true) },
+    exitTransition = { slideOut(toStart = true) },
+    popEnterTransition = { slideIn(fromEnd = false) },
+    popExitTransition = { slideOut(toStart = false) },
+    content = { content(it) },
+)
+
 /** The navigation graph; each destination gets its ViewModel from [container]. */
 @Composable
 fun AppNavHost(container: AppContainer) {
@@ -62,10 +95,10 @@ fun AppNavHost(container: AppContainer) {
     NavHost(
         navController,
         startDestination = Routes.HOME,
-        enterTransition = { androidx.compose.animation.EnterTransition.None },
-        exitTransition = { androidx.compose.animation.ExitTransition.None },
-        popEnterTransition = { androidx.compose.animation.EnterTransition.None },
-        popExitTransition = { androidx.compose.animation.ExitTransition.None },
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { ExitTransition.None },
     ) {
         composable(Routes.HOME) {
             val home: HomeViewModel = viewModel(
@@ -107,7 +140,7 @@ fun AppNavHost(container: AppContainer) {
                 onBack = { navController.popBackStack() },
             )
         }
-        composable(Routes.MANAGE_PHASES, arguments = curriculumArguments) { entry ->
+        animatedComposable(Routes.MANAGE_PHASES, arguments = curriculumArguments) { entry ->
             val curriculumId = entry.curriculumId()
             val manage: ManagePhasesViewModel = viewModel(
                 factory = viewModelFactory {
@@ -131,7 +164,7 @@ fun AppNavHost(container: AppContainer) {
                 onBack = { navController.popBackStack() },
             )
         }
-        composable(Routes.MANAGED_PHASE, arguments = managedPhaseArguments) { entry ->
+        animatedComposable(Routes.MANAGED_PHASE, arguments = managedPhaseArguments) { entry ->
             val curriculumId = entry.curriculumId()
             val phaseId = entry.phaseId()
             val phase: ManagedPhaseViewModel = viewModel(
@@ -148,13 +181,13 @@ fun AppNavHost(container: AppContainer) {
                 onEdit = { navController.navigate(Routes.editPhase(curriculumId, phaseId)) },
             )
         }
-        composable(Routes.EDIT_PHASE, arguments = managedPhaseArguments) { entry ->
+        animatedComposable(Routes.EDIT_PHASE, arguments = managedPhaseArguments) { entry ->
             PhaseEditorRoute(container, entry.curriculumId(), entry.phaseId(), onClose = { navController.popBackStack() })
         }
-        composable(Routes.NEW_PHASE, arguments = curriculumArguments) { entry ->
+        animatedComposable(Routes.NEW_PHASE, arguments = curriculumArguments) { entry ->
             PhaseEditorRoute(container, entry.curriculumId(), phaseId = null, onClose = { navController.popBackStack() })
         }
-        composable(Routes.PHASES) {
+        animatedComposable(Routes.PHASES) {
             val phases: PhasesViewModel = viewModel(
                 factory = viewModelFactory {
                     initializer { PhasesViewModel(container.curriculumSelection, container.progressRepository) }
@@ -167,7 +200,7 @@ fun AppNavHost(container: AppContainer) {
                 onBack = { navController.popBackStack() },
             )
         }
-        composable(Routes.PHASE, arguments = listOf(navArgument(Routes.PHASE_ID) { type = NavType.StringType })) { entry ->
+        animatedComposable(Routes.PHASE, arguments = listOf(navArgument(Routes.PHASE_ID) { type = NavType.StringType })) { entry ->
             val phaseId = entry.phaseId()
             val phase: PhaseViewModel = viewModel(
                 factory = viewModelFactory {
