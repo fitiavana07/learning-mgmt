@@ -22,6 +22,10 @@ interface PhaseStatusDao {
     )
     fun observeAllRows(): Flow<List<PhaseStatusRow>>
 
+    /** The status of a phase; null when it has no row yet (not started). */
+    @Query("SELECT status FROM phase_status WHERE phaseId = :phaseId")
+    suspend fun statusOf(phaseId: String): Status?
+
     @Upsert
     suspend fun upsert(status: PhaseStatus)
 

@@ -30,7 +30,7 @@ class ProgressRepositoryTest {
         db = inMemoryDatabase()
         curriculumId = CurriculumRepository(db.curriculumDao(), sequentialIds("c")).create("Spanish")
         phases = PhaseRepository(db, db.phaseDao(), sequentialIds("p"))
-        progress = ProgressRepository(db, db.phaseDao(), db.phaseStatusDao())
+        progress = ProgressRepository(db, db.phaseDao(), db.phaseStatusDao(), db.topicProgressDao())
         p1 = phases.add(curriculumId, "A", "")
         p2 = phases.add(curriculumId, "B", "")
         p3 = phases.add(curriculumId, "C", "")

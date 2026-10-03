@@ -13,6 +13,9 @@ interface TopicProgressDao {
     @Query(ROWS_BY_PHASE)
     suspend fun getRowsByPhase(phaseId: String): List<TopicProgressRow>
 
+    @Query("SELECT phaseId FROM topic WHERE id = :topicId")
+    suspend fun phaseIdOf(topicId: String): String?
+
     @Upsert
     suspend fun upsert(progress: TopicProgress)
 

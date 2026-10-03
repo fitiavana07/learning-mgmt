@@ -25,7 +25,12 @@ class AppContainer(context: Context) {
     val curriculumRepository = CurriculumRepository(database.curriculumDao())
     val phaseRepository = PhaseRepository(database, database.phaseDao())
     val topicRepository = TopicRepository(database, database.topicDao())
-    val progressRepository = ProgressRepository(database, database.phaseDao(), database.phaseStatusDao())
+    val progressRepository = ProgressRepository(
+        database,
+        database.phaseDao(),
+        database.phaseStatusDao(),
+        database.topicProgressDao(),
+    )
 
     private val selectedCurriculumStore = SelectedCurriculumStore(
         PreferenceDataStoreFactory.create(scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)) {

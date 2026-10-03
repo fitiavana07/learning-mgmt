@@ -41,7 +41,7 @@ class TestEnvironment : ExternalResource() {
         curricula = CurriculumRepository(db.curriculumDao(), sequentialIds("c"))
         phases = PhaseRepository(db, db.phaseDao(), sequentialIds("p"))
         topics = TopicRepository(db, db.topicDao(), sequentialIds("t"))
-        progress = ProgressRepository(db, db.phaseDao(), db.phaseStatusDao())
+        progress = ProgressRepository(db, db.phaseDao(), db.phaseStatusDao(), db.topicProgressDao())
         selection = CurriculumSelection(
             curricula,
             testSelectionStore(Files.createTempDirectory("selection").toFile(), scope),

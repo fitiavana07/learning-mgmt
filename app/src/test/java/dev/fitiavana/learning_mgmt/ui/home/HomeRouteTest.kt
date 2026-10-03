@@ -50,7 +50,7 @@ class HomeRouteTest {
         db = inMemoryDatabase()
         val curricula = CurriculumRepository(db.curriculumDao(), sequentialIds("c"))
         val phases = PhaseRepository(db, db.phaseDao(), sequentialIds("p"))
-        val progress = ProgressRepository(db, db.phaseDao(), db.phaseStatusDao())
+        val progress = ProgressRepository(db, db.phaseDao(), db.phaseStatusDao(), db.topicProgressDao())
         val spanish = curricula.create("Spanish")
         phases.add(spanish, "Basics", "")
         progress.start("p1")

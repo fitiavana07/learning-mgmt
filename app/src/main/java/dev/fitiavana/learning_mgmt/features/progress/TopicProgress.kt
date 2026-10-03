@@ -29,4 +29,10 @@ data class TopicProgressRow(
     @Embedded val topic: Topic,
     val status: Status?,
     val done: Int?,
-)
+) {
+    /** Progress recorded against an older total is clamped to the current one. */
+    fun toTopicWithProgress(): TopicWithProgress {
+        val stored = TopicWithProgress(topic, status ?: Status.NOT_STARTED, done ?: 0)
+        return TopicRules.record(stored, stored.done)
+    }
+}
