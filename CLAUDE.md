@@ -6,19 +6,25 @@ code in this repository.
 ## Project
 
 Android app (Kotlin, Jetpack Compose, Material3) for tracking learning
-curricula made of ordered phases. Home shows the in-progress phase of the
-selected curriculum (rendered markdown); a drawer switches curricula; "Manage
-curricula" is the only place for structure edits (curricula, phases, reorder,
-phase editor). Single Gradle module `:app`, package
-`dev.fitiavana.learning_mgmt`.
+curricula made of ordered phases. A phase can have ordered topics (simple, or
+quantified with a total and unit), worked through one at a time; a phase with
+topics can only be completed once all of them are. Home shows the in-progress
+phase of the selected curriculum (collapsible rendered markdown, then its
+topics); a drawer switches curricula; "Manage curricula" is the only place for
+structure edits (curricula, phases, topics, reorder, phase editor). Single
+Gradle module `:app`, package `dev.fitiavana.learning_mgmt`.
 
 Architecture (details in the approved plan):
-- `features/{curricula,phases,progress,selection}`: Room entities, DAOs,
-  repositories and pure rules. `phases` is structure only and `progress` is
-  progress only, so a structure-only export stays possible.
+- `features/{curricula,phases,topics,progress,selection}`: Room entities, DAOs,
+  repositories and pure rules. `phases` and `topics` are structure only and
+  `progress` is progress only (phase status, topic status and done count), so a
+  structure-only export stays possible.
 - `ui/`: screens and ViewModels, nested by navigation flow (`home`,
-  `managecurricula/managephases/phaseeditor`), shared composables in
-  `ui/common`, navigation graph in `ui/AppNavHost.kt`.
+  `managecurricula/managephases/{phaseeditor,managetopics/topiceditor}`), shared
+  composables in `ui/common`, navigation graph in `ui/AppNavHost.kt`.
+- Room schema is exported to `app/schemas`; any entity change bumps the
+  `AppDatabase` version, adds a migration in `db/Migrations.kt` and a case in
+  `MigrationTest` (JVM, Robolectric).
 - Manual dependency injection: `AppContainer` (no DI framework), ViewModels
   created with `viewModelFactory { initializer { ... } }`.
 - Ids are UUID strings generated in app code (`IdGenerator`).

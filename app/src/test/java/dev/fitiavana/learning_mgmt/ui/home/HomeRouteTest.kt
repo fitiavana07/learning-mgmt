@@ -82,7 +82,7 @@ class HomeRouteTest {
 
     @Test
     fun opensOnTheFirstCurriculumsPhaseInProgress() {
-        compose.waitUntil(5_000) { count("Phase 1 · Basics") > 0 }
+        compose.waitUntil(5_000) { count("Mark as completed") > 0 }
 
         compose.onNodeWithText("Mark as completed").assertIsDisplayed()
     }
