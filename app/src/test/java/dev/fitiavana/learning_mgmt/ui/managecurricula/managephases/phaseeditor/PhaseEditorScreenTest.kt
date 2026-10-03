@@ -1,19 +1,16 @@
 package dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.phaseeditor
 
+import dev.fitiavana.learning_mgmt.ui.showKeyboard
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import android.view.View
 import androidx.compose.ui.platform.LocalView
-import androidx.core.graphics.Insets
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -205,17 +202,7 @@ class PhaseEditorScreenTest {
     @Test
     fun saveButtonAndDescriptionStayAboveTheKeyboard() {
         show()
-        val keyboardPx = 600
-        compose.runOnUiThread {
-            val insets = WindowInsetsCompat.Builder()
-                .setInsets(WindowInsetsCompat.Type.ime(), Insets.of(0, 0, 0, keyboardPx))
-                .setVisible(WindowInsetsCompat.Type.ime(), true)
-                .build()
-            ViewCompat.dispatchApplyWindowInsets(view, insets)
-        }
-        compose.waitForIdle()
-
-        val visibleBottom = compose.onRoot().fetchSemanticsNode().boundsInRoot.bottom - keyboardPx
+        val visibleBottom = compose.showKeyboard(view, heightPx = 600)
         val saveBottom = compose.onNodeWithText("Save").fetchSemanticsNode().boundsInRoot.bottom
         val descriptionBottom = compose.onNodeWithTag("description-field").fetchSemanticsNode().boundsInRoot.bottom
         assertTrue("Save ($saveBottom) hidden below $visibleBottom", saveBottom <= visibleBottom)

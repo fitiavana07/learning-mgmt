@@ -1,5 +1,10 @@
 package dev.fitiavana.learning_mgmt.ui.home
 
+import dev.fitiavana.learning_mgmt.ui.showKeyboard
+import org.junit.Assert.assertTrue
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.platform.LocalView
+import android.view.View
 import dev.fitiavana.learning_mgmt.ui.common.TopicHandlers
 import dev.fitiavana.learning_mgmt.features.topics.Topic
 import dev.fitiavana.learning_mgmt.features.progress.TopicWithProgress
@@ -12,6 +17,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import dev.fitiavana.learning_mgmt.features.phases.Phase
 import dev.fitiavana.learning_mgmt.ui.theme.LearningmgmtTheme
 import org.junit.Assert.assertEquals
@@ -19,8 +25,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
+@Config(qualifiers = "w360dp-h800dp")
 class HomeScreenTest {
     @get:Rule
     val compose = createComposeRule()
@@ -162,6 +170,8 @@ class HomeScreenTest {
         compose.onNodeWithText("Manage curricula").assertDoesNotExist()
     }
 
+    private val LONG_DESCRIPTION = (1..120).joinToString("\n\n") { "Paragraph number $it" }
+
     private val startedTopics = mutableListOf<String>()
 
     private fun topic(number: Int, status: Status) =
@@ -197,6 +207,46 @@ class HomeScreenTest {
         compose.onNodeWithText("Start").performClick()
 
         assertEquals(listOf("t1"), startedTopics)
+    }
+
+    @Test
+    fun theProgressFieldStaysAboveTheKeyboard() {
+        lateinit var view: View
+        compose.setContent {
+            view = LocalView.current
+            LearningmgmtTheme {
+                HomeScreen(
+                    state = HomeUiState(
+                        "Spanish",
+                        HomeContent.InProgress(
+                            phase(2, "Past Tenses", LONG_DESCRIPTION),
+                            listOf(
+                                TopicWithProgress(
+                                    Topic("t1", "p2", 1, "Chapter", total = 40, unit = "pages"),
+                                    Status.IN_PROGRESS,
+                                    done = 12,
+                                ),
+                            ),
+                        ),
+                    ),
+                    onStart = {},
+                    onComplete = {},
+                    onManageCurricula = {},
+                    onOpenMenu = {},
+                    onShowPhases = {},
+                )
+            }
+        }
+
+        compose.waitUntil(5_000) { compose.onAllNodesWithText("Show more").fetchSemanticsNodes().isNotEmpty() }
+        // Like on a device: scroll to the field and tap it, then the keyboard slides in.
+        compose.onNodeWithTag("progress-field").performScrollTo().performClick()
+        val visibleBottom = compose.showKeyboard(view, heightPx = 400)
+
+        // positionInRoot is not clipped to the scroll viewport, unlike boundsInRoot.
+        val field = compose.onNodeWithTag("progress-field").fetchSemanticsNode()
+        val fieldBottom = field.positionInRoot.y + field.size.height
+        assertTrue("Field ($fieldBottom) hidden below $visibleBottom", fieldBottom <= visibleBottom)
     }
 
     @Test
