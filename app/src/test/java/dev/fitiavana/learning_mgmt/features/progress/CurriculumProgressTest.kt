@@ -62,4 +62,52 @@ class CurriculumProgressTest {
         assertEquals(2, progress.total)
         assertEquals(CurriculumProgress.Summary.AllCompleted, progress.summary)
     }
+
+    @Test
+    fun fractionCountsOnlyCompletedPhases() {
+        val phases = listOf(p(1, completed), p(2, inProgress), p(3, notStarted))
+
+        assertEquals(1f / 3, CurriculumProgress.of(phases).fraction, 0.001f)
+    }
+
+    @Test
+    fun fractionIsEmptyWhenTheFirstPhaseIsInProgress() {
+        val progress = CurriculumProgress.of(listOf(p(1, inProgress), p(2, notStarted)))
+
+        assertEquals(0f, progress.fraction, 0.001f)
+    }
+
+    @Test
+    fun lastPhaseInProgressIsNotFull() {
+        val progress = CurriculumProgress.of(listOf(p(1, completed), p(2, inProgress)))
+
+        assertEquals(0.5f, progress.fraction, 0.001f)
+    }
+
+    @Test
+    fun fractionIsFullOnlyWhenAllCompleted() {
+        val progress = CurriculumProgress.of(listOf(p(1, completed), p(2, completed)))
+
+        assertEquals(1f, progress.fraction, 0.001f)
+    }
+
+    @Test
+    fun startedFractionIncludesTheInProgressPhase() {
+        val phases = listOf(p(1, completed), p(2, inProgress), p(3, notStarted))
+
+        assertEquals(2f / 3, CurriculumProgress.of(phases).startedFraction, 0.001f)
+    }
+
+    @Test
+    fun startedFractionEqualsFractionWithoutAPhaseInProgress() {
+        val between = CurriculumProgress.of(listOf(p(1, completed), p(2, notStarted)))
+
+        assertEquals(between.fraction, between.startedFraction, 0.001f)
+        assertEquals(0f, CurriculumProgress.of(emptyList()).startedFraction, 0.001f)
+    }
+
+    @Test
+    fun fractionIsZeroWithoutPhases() {
+        assertEquals(0f, CurriculumProgress.of(emptyList()).fraction, 0.001f)
+    }
 }

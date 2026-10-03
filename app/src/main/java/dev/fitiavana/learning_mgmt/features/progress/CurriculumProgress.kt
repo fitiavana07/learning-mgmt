@@ -12,6 +12,18 @@ data class CurriculumProgress(val position: Int, val total: Int, val summary: Su
         data object AllCompleted : Summary
     }
 
+    /** Share of completed phases: the in-progress phase is not counted, unlike [position]. */
+    val fraction: Float
+        get() {
+            if (total == 0) return 0f
+            val completed = if (summary is Summary.InProgress) position - 1 else position
+            return completed.toFloat() / total
+        }
+
+    /** Share of phases completed or in progress, i.e. [position] over [total]. */
+    val startedFraction: Float
+        get() = if (total == 0) 0f else position.toFloat() / total
+
     companion object {
         fun of(phases: List<PhaseWithStatus>): CurriculumProgress {
             val current = PhaseRules.current(phases)

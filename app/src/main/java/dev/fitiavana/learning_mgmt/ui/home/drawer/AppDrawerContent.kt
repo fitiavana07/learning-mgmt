@@ -1,6 +1,7 @@
 package dev.fitiavana.learning_mgmt.ui.home.drawer
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,11 +20,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.fitiavana.learning_mgmt.R
-import dev.fitiavana.learning_mgmt.features.progress.CurriculumProgress
 import dev.fitiavana.learning_mgmt.features.progress.CurriculumProgress.Summary
 
 @Composable
@@ -72,10 +73,24 @@ private fun CurriculumEntry(item: DrawerItem) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            LinearProgressIndicator(
-                progress = { item.progress.fraction },
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-            )
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                // Dimmer layer: completed + in-progress phase, drawn under the solid completed layer.
+                LinearProgressIndicator(
+                    progress = { item.progress.startedFraction },
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+                    // Default track equals the selected item's container color; a translucent
+                    // onSurface stays visible on both the selected and unselected backgrounds.
+                    trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                    drawStopIndicator = {},
+                )
+                LinearProgressIndicator(
+                    progress = { item.progress.fraction },
+                    modifier = Modifier.fillMaxWidth(),
+                    trackColor = Color.Transparent,
+                    drawStopIndicator = {},
+                )
+            }
             Text(
                 text = stringResource(R.string.drawer_progress, item.progress.position, item.progress.total),
                 style = MaterialTheme.typography.labelMedium,
@@ -92,6 +107,3 @@ private fun summaryText(summary: Summary): String = when (summary) {
     is Summary.Next -> stringResource(R.string.phase_next, summary.phase.number, summary.phase.name)
     Summary.AllCompleted -> stringResource(R.string.phases_all_completed)
 }
-
-private val CurriculumProgress.fraction: Float
-    get() = if (total == 0) 0f else position.toFloat() / total
