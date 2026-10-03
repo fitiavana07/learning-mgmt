@@ -13,8 +13,12 @@ object PhaseRules {
     fun canStart(phases: List<PhaseWithStatus>, target: PhaseWithStatus): Boolean =
         nextToStart(phases)?.phase?.id == target.phase.id
 
-    fun canComplete(phases: List<PhaseWithStatus>, target: PhaseWithStatus): Boolean =
-        current(phases)?.phase?.id == target.phase.id
+    /** The in-progress phase, once all its [topics] (none by default) are completed. */
+    fun canComplete(
+        phases: List<PhaseWithStatus>,
+        target: PhaseWithStatus,
+        topics: TopicSummary = TopicSummary(completed = 0, total = 0),
+    ): Boolean = current(phases)?.phase?.id == target.phase.id && topics.allCompleted
 
     fun actionFor(phases: List<PhaseWithStatus>, target: PhaseWithStatus): PhaseAction {
         val current = current(phases)

@@ -108,6 +108,15 @@ class PhaseRulesTest {
     }
 
     @Test
+    fun aPhaseCannotBeCompletedWhileItHasUncompletedTopics() {
+        val phases = listOf(p(1, inProgress))
+
+        assertFalse(PhaseRules.canComplete(phases, phases[0], TopicSummary(completed = 1, total = 2)))
+        assertTrue(PhaseRules.canComplete(phases, phases[0], TopicSummary(completed = 2, total = 2)))
+        assertTrue(PhaseRules.canComplete(phases, phases[0], TopicSummary(completed = 0, total = 0)))
+    }
+
+    @Test
     fun onlyTheInProgressPhaseCanBeCompleted() {
         val phases = listOf(p(1, completed), p(2, inProgress), p(3, notStarted))
 
