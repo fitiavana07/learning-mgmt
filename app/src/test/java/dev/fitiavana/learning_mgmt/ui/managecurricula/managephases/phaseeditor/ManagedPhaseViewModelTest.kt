@@ -57,4 +57,17 @@ class ManagedPhaseViewModelTest {
 
         assertTrue(viewModel(spanish, "nope").stateWhere { it != PhaseViewState.Loading } == PhaseViewState.NotFound)
     }
+
+    @Test
+    fun carriesTheTopicsOfThePhase() = runBlocking {
+        val spanish = env.curricula.create("Spanish")
+        env.phases.add(spanish, "Basics", "")
+        env.topics.add("p1", "Greetings")
+
+        val state = viewModel(spanish, "p1").stateWhere {
+            it is PhaseViewState.Loaded && it.topics.isNotEmpty()
+        } as PhaseViewState.Loaded
+
+        assertEquals(listOf("Greetings"), state.topics.map { it.topic.name })
+    }
 }

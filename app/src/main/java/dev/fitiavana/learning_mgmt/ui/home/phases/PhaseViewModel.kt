@@ -1,5 +1,8 @@
 package dev.fitiavana.learning_mgmt.ui.home.phases
 
+import dev.fitiavana.learning_mgmt.ui.common.TopicHandlers
+import dev.fitiavana.learning_mgmt.features.progress.TopicWithProgress
+import dev.fitiavana.learning_mgmt.features.progress.TopicRules
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.fitiavana.learning_mgmt.features.progress.PhaseAction
@@ -19,7 +22,11 @@ import kotlinx.coroutines.launch
 sealed interface PhaseViewState {
     data object Loading : PhaseViewState
     data object NotFound : PhaseViewState
-    data class Loaded(val phase: PhaseWithStatus, val action: PhaseAction) : PhaseViewState
+    data class Loaded(
+        val phase: PhaseWithStatus,
+        val action: PhaseAction,
+        val topics: List<TopicWithProgress> = emptyList(),
+    ) : PhaseViewState
 }
 
 /** One phase of the selected curriculum, read-only except for its status. */
@@ -35,20 +42,33 @@ class PhaseViewModel(
                 if (curriculum == null) {
                     flowOf(PhaseViewState.NotFound)
                 } else {
-                    progress.observe(curriculum.id).map { phases ->
-                        phases.find { it.phase.id == phaseId }
-                            ?.let { PhaseViewState.Loaded(it, PhaseRules.actionFor(phases, it)) }
-                            ?: PhaseViewState.NotFound
+                    progress.observe(curriculum.id).flatMapLatest { phases ->
+                        val target = phases.find { it.phase.id == phaseId }
+                        if (target == null) {
+                            flowOf(PhaseViewState.NotFound)
+                        } else {
+                            progress.observeTopics(phaseId).map { topics ->
+                                PhaseViewState.Loaded(
+                                    target,
+                                    PhaseRules.actionFor(phases, target, TopicRules.summary(topics)),
+                                    topics,
+                                )
+                            }
+                        }
                     }
                 }
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PhaseViewState.Loading)
+
+    val topicHandlers = TopicHandlers.of(viewModelScope, progress)
 
     fun start() {
         viewModelScope.launch { progress.start(phaseId) }
     }
 
     fun complete() {
+        val loaded = uiState.value as? PhaseViewState.Loaded
+        if (loaded != null && !TopicRules.summary(loaded.topics).allCompleted) return
         viewModelScope.launch { progress.complete(phaseId) }
     }
 }

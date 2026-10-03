@@ -54,6 +54,7 @@ fun HomeRoute(
             onManageCurricula = onManageCurricula,
             onOpenMenu = { scope.launch { drawerState.open() } },
             onShowPhases = onShowPhases,
+            topicHandlers = home.topicHandlers,
         )
     }
 }

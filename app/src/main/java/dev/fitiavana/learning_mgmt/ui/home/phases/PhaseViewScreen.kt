@@ -1,5 +1,8 @@
 package dev.fitiavana.learning_mgmt.ui.home.phases
 
+import dev.fitiavana.learning_mgmt.ui.common.TopicsSection
+import dev.fitiavana.learning_mgmt.ui.common.TopicHandlers
+import dev.fitiavana.learning_mgmt.features.progress.Status
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -29,6 +32,7 @@ fun PhaseViewScreen(
     onBack: () -> Unit,
     /** Manage mode: shows an edit button for the phase. Null in read mode. */
     onEdit: (() -> Unit)? = null,
+    topicHandlers: TopicHandlers = TopicHandlers.None,
 ) {
     Scaffold(
         topBar = {
@@ -60,9 +64,18 @@ fun PhaseViewScreen(
                 title = stringResource(R.string.phase_not_found),
                 modifier = Modifier.padding(padding),
             )
-            is PhaseViewState.Loaded -> PhaseContent(state.phase.phase, Modifier.padding(padding)) {
-                StatusChip(state.phase.status)
-            }
+            is PhaseViewState.Loaded -> PhaseContent(
+                state.phase.phase,
+                Modifier.padding(padding),
+                header = { StatusChip(state.phase.status) },
+                footer = {
+                    TopicsSection(
+                        topics = state.topics,
+                        editable = onEdit == null && state.phase.status == Status.IN_PROGRESS,
+                        handlers = topicHandlers,
+                    )
+                },
+            )
         }
     }
 }

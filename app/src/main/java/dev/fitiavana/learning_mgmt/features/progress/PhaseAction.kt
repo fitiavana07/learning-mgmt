@@ -13,5 +13,8 @@ sealed interface PhaseAction {
     /** Not startable until the earlier not-started [phase] is started and completed. */
     data class WaitForStart(val phase: Phase) : PhaseAction
 
+    /** The in-progress phase cannot be completed until all its topics (counted in [topics]) are. */
+    data class WaitForTopics(val topics: TopicSummary) : PhaseAction
+
     data object None : PhaseAction
 }

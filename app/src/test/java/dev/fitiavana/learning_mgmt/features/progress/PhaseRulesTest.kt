@@ -117,6 +117,25 @@ class PhaseRulesTest {
     }
 
     @Test
+    fun completeActionOnlyOffersCompletionOnceAllTopicsAreCompleted() {
+        assertEquals(PhaseAction.Complete, PhaseRules.completeAction(TopicSummary(completed = 2, total = 2)))
+        assertEquals(PhaseAction.Complete, PhaseRules.completeAction(TopicSummary(completed = 0, total = 0)))
+        assertEquals(
+            PhaseAction.WaitForTopics(TopicSummary(completed = 1, total = 3)),
+            PhaseRules.completeAction(TopicSummary(completed = 1, total = 3)),
+        )
+    }
+
+    @Test
+    fun theInProgressPhaseWaitsForItsUncompletedTopics() {
+        val phases = listOf(p(1, inProgress), p(2, notStarted))
+        val topics = TopicSummary(completed = 1, total = 3)
+
+        assertEquals(PhaseAction.WaitForTopics(topics), PhaseRules.actionFor(phases, phases[0], topics))
+        assertEquals(PhaseAction.WaitForCompletion(phases[0].phase), PhaseRules.actionFor(phases, phases[1], topics))
+    }
+
+    @Test
     fun onlyTheInProgressPhaseCanBeCompleted() {
         val phases = listOf(p(1, completed), p(2, inProgress), p(3, notStarted))
 

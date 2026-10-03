@@ -270,6 +270,7 @@ fun AppNavHost(container: AppContainer) {
                 onStart = phase::start,
                 onComplete = phase::complete,
                 onBack = { navController.popBackStack() },
+                topicHandlers = phase.topicHandlers,
             )
         }
     }

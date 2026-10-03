@@ -1,5 +1,11 @@
 package dev.fitiavana.learning_mgmt.ui.home
 
+import dev.fitiavana.learning_mgmt.ui.common.TopicHandlers
+import dev.fitiavana.learning_mgmt.features.topics.Topic
+import dev.fitiavana.learning_mgmt.features.progress.TopicWithProgress
+import dev.fitiavana.learning_mgmt.features.progress.Status
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -154,5 +160,72 @@ class HomeScreenTest {
 
         compose.onNodeWithText("Mark as completed").assertDoesNotExist()
         compose.onNodeWithText("Manage curricula").assertDoesNotExist()
+    }
+
+    private val startedTopics = mutableListOf<String>()
+
+    private fun topic(number: Int, status: Status) =
+        TopicWithProgress(Topic("t$number", "p2", number, "Name $number", null, null), status, 0)
+
+    private fun showWithTopics(state: HomeUiState) {
+        compose.setContent {
+            LearningmgmtTheme {
+                HomeScreen(
+                    state = state,
+                    onStart = { started++ },
+                    onComplete = { completed++ },
+                    onManageCurricula = { managed++ },
+                    onOpenMenu = { menuOpened++ },
+                    onShowPhases = { phasesShown++ },
+                    topicHandlers = TopicHandlers(onStart = { startedTopics += it }, onComplete = {}, onRecord = { _, _ -> }),
+                )
+            }
+        }
+    }
+
+    @Test
+    fun inProgressShowsTheTopicsAndStartsTheNextOne() {
+        showWithTopics(
+            HomeUiState(
+                "Spanish",
+                HomeContent.InProgress(phase(2, "Past Tenses"), listOf(topic(1, Status.NOT_STARTED), topic(2, Status.NOT_STARTED))),
+            ),
+        )
+
+        compose.onNodeWithText("0 of 2 topics completed").assertExists()
+        compose.onNodeWithText("Topic 1 · Name 1").assertExists()
+        compose.onNodeWithText("Start").performClick()
+
+        assertEquals(listOf("t1"), startedTopics)
+    }
+
+    @Test
+    fun theCompleteButtonWaitsForUncompletedTopics() {
+        showWithTopics(
+            HomeUiState("Spanish", HomeContent.InProgress(phase(2, "Past Tenses"), listOf(topic(1, Status.IN_PROGRESS)))),
+        )
+
+        compose.onNodeWithText("Mark as completed").assertIsNotEnabled()
+        compose.onNodeWithText("Complete all topics first (0 of 1 done)").assertIsDisplayed()
+    }
+
+    @Test
+    fun theCompleteButtonIsEnabledOnceAllTopicsAreCompleted() {
+        showWithTopics(
+            HomeUiState("Spanish", HomeContent.InProgress(phase(2, "Past Tenses"), listOf(topic(1, Status.COMPLETED)))),
+        )
+
+        compose.onNodeWithText("Mark as completed").assertIsEnabled()
+    }
+
+    @Test
+    fun aPhaseReadyToStartShowsItsTopicsWithoutActions() {
+        showWithTopics(
+            HomeUiState("Spanish", HomeContent.ReadyToStart(phase(2, "Past Tenses"), listOf(topic(1, Status.NOT_STARTED)))),
+        )
+
+        compose.onNodeWithText("Topic 1 · Name 1").assertExists()
+        compose.onNodeWithText("Start").assertDoesNotExist()
+        compose.onNodeWithText("Start Phase 2").assertIsDisplayed()
     }
 }

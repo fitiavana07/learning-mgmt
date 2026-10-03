@@ -83,6 +83,19 @@
     <string name="topic_field_unit">Unit (optional)</string>
     <string name="topic_total_invalid">Enter a whole number above 0</string>
     <string name="topic_discard_message">Your changes to this topic will be lost.</string>
+    <string name="topics_section_title">Topics</string>
+    <string name="topic_progress">%1$d / %2$d</string>
+    <string name="topic_progress_with_unit">%1$d / %2$d %3$s</string>
+    <string name="topic_field_done">Done</string>
+    <string name="action_start_topic">Start</string>
+    <string name="action_complete_topic">Complete</string>
+    <string name="action_update_progress">Update</string>
+    <!-- Counts of topics already done out of all, not a quantity to pluralize. -->
+    <string name="action_wait_for_topics" tools:ignore="PluralsCandidate">Complete all topics first (%1$d of %2$d done)</string>
+    <plurals name="topics_completed_summary">
+        <item quantity="one">%1$d of %2$d topic completed</item>
+        <item quantity="other">%1$d of %2$d topics completed</item>
+    </plurals>
     <plurals name="phase_count">
         <item quantity="one">%1$d phase</item>
         <item quantity="other">%1$d phases</item>

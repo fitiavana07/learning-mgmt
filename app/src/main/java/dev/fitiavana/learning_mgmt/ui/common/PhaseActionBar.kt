@@ -43,6 +43,11 @@ fun PhaseActionBar(
             enabled = false,
             hint = stringResource(R.string.action_wait_for_completion, action.phase.number),
         )
+        is PhaseAction.WaitForTopics -> BottomButton(
+            label = stringResource(R.string.action_complete_phase),
+            enabled = false,
+            hint = stringResource(R.string.action_wait_for_topics, action.topics.completed, action.topics.total),
+        )
         is PhaseAction.WaitForStart -> BottomButton(
             label = startLabel,
             enabled = false,

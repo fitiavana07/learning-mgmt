@@ -107,4 +107,9 @@ class TopicRulesTest {
         assertEquals(20, lowered.done)
         assertEquals(completed, lowered.status)
     }
+
+    @Test
+    fun aCompletedQuantifiedTopicIsFullEvenIfItsTotalWasRaisedLater() {
+        assertEquals(1f, TopicRules.fraction(t(1, completed, total = 60, done = 40)), 0f)
+    }
 }

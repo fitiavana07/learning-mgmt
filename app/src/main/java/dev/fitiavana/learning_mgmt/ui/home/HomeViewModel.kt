@@ -1,5 +1,8 @@
 package dev.fitiavana.learning_mgmt.ui.home
 
+import dev.fitiavana.learning_mgmt.ui.common.TopicHandlers
+import dev.fitiavana.learning_mgmt.features.progress.TopicWithProgress
+import dev.fitiavana.learning_mgmt.features.progress.TopicRules
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.fitiavana.learning_mgmt.features.phases.Phase
@@ -20,9 +23,24 @@ sealed interface HomeContent {
     data object Loading : HomeContent
     data object NoCurricula : HomeContent
     data object NoPhases : HomeContent
-    data class ReadyToStart(val phase: Phase) : HomeContent
-    data class InProgress(val phase: Phase) : HomeContent
+    data class ReadyToStart(val phase: Phase, val topics: List<TopicWithProgress> = emptyList()) : HomeContent {
+        override fun withTopics(topics: List<TopicWithProgress>) = copy(topics = topics)
+    }
+    data class InProgress(val phase: Phase, val topics: List<TopicWithProgress> = emptyList()) : HomeContent {
+        override fun withTopics(topics: List<TopicWithProgress>) = copy(topics = topics)
+    }
     data object AllCompleted : HomeContent
+
+    /** This content with the topics of its phase, when it has a phase. */
+    fun withTopics(topics: List<TopicWithProgress>): HomeContent = this
+
+    /** The phase this content is about, when it has one. */
+    val phaseId: String?
+        get() = when (this) {
+            is InProgress -> phase.id
+            is ReadyToStart -> phase.id
+            else -> null
+        }
 
     companion object {
         fun of(phases: List<PhaseWithStatus>): HomeContent {
@@ -46,10 +64,20 @@ class HomeViewModel(
                 if (curriculum == null) {
                     flowOf(HomeUiState(null, HomeContent.NoCurricula))
                 } else {
-                    progress.observe(curriculum.id).map { HomeUiState(curriculum.name, HomeContent.of(it)) }
+                    progress.observe(curriculum.id).flatMapLatest { phases ->
+                        val content = HomeContent.of(phases)
+                        val phaseId = content.phaseId
+                        if (phaseId == null) {
+                            flowOf(HomeUiState(curriculum.name, content))
+                        } else {
+                            progress.observeTopics(phaseId).map { HomeUiState(curriculum.name, content.withTopics(it)) }
+                        }
+                    }
                 }
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState(null, HomeContent.Loading))
+
+    val topicHandlers = TopicHandlers.of(viewModelScope, progress)
 
     fun startNext() {
         val content = uiState.value.content as? HomeContent.ReadyToStart ?: return
@@ -58,6 +86,7 @@ class HomeViewModel(
 
     fun completeCurrent() {
         val content = uiState.value.content as? HomeContent.InProgress ?: return
+        if (!TopicRules.summary(content.topics).allCompleted) return
         viewModelScope.launch { progress.complete(content.phase.id) }
     }
 }

@@ -17,14 +17,22 @@ object PhaseRules {
     fun canComplete(
         phases: List<PhaseWithStatus>,
         target: PhaseWithStatus,
-        topics: TopicSummary = TopicSummary(completed = 0, total = 0),
+        topics: TopicSummary = TopicSummary.None,
     ): Boolean = current(phases)?.phase?.id == target.phase.id && topics.allCompleted
 
-    fun actionFor(phases: List<PhaseWithStatus>, target: PhaseWithStatus): PhaseAction {
+    /** Completing the in-progress phase, or waiting for its [topics] to be completed first. */
+    fun completeAction(topics: TopicSummary): PhaseAction =
+        if (topics.allCompleted) PhaseAction.Complete else PhaseAction.WaitForTopics(topics)
+
+    fun actionFor(
+        phases: List<PhaseWithStatus>,
+        target: PhaseWithStatus,
+        topics: TopicSummary = TopicSummary.None,
+    ): PhaseAction {
         val current = current(phases)
         val next = nextToStart(phases)
         return when {
-            canComplete(phases, target) -> PhaseAction.Complete
+            canComplete(phases, target) -> completeAction(topics)
             canStart(phases, target) -> PhaseAction.Start
             target.status != Status.NOT_STARTED -> PhaseAction.None
             current != null -> PhaseAction.WaitForCompletion(current.phase)

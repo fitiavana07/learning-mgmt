@@ -4,6 +4,10 @@ package dev.fitiavana.learning_mgmt.features.progress
 data class TopicSummary(val completed: Int, val total: Int) {
     val allCompleted: Boolean get() = completed == total
     val fraction: Float get() = if (total == 0) 0f else completed.toFloat() / total
+
+    companion object {
+        val None = TopicSummary(completed = 0, total = 0)
+    }
 }
 
 /** Start/complete/progress rules for the topics of one phase. Topics are expected in number order. */
@@ -39,8 +43,8 @@ object TopicRules {
     fun fraction(topic: TopicWithProgress): Float {
         val total = topic.topic.total
         return when {
-            total != null -> topic.done.toFloat() / total
             topic.status == Status.COMPLETED -> 1f
+            total != null -> topic.done.toFloat() / total
             else -> 0f
         }
     }

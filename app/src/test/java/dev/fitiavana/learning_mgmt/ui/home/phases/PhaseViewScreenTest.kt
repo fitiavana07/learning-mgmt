@@ -1,5 +1,9 @@
 package dev.fitiavana.learning_mgmt.ui.home.phases
 
+import dev.fitiavana.learning_mgmt.ui.common.TopicHandlers
+import dev.fitiavana.learning_mgmt.features.topics.Topic
+import dev.fitiavana.learning_mgmt.features.progress.TopicWithProgress
+import dev.fitiavana.learning_mgmt.features.progress.TopicSummary
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -137,5 +141,65 @@ class PhaseViewScreenTest {
         compose.onNodeWithContentDescription("Back").performClick()
 
         assertEquals(1, back)
+    }
+
+    private fun topic(number: Int, status: Status) =
+        TopicWithProgress(Topic("t$number", "p1", number, "Name $number", null, null), status, 0)
+
+    private val startedTopics = mutableListOf<String>()
+
+    private fun showWithTopics(state: PhaseViewState, editable: Boolean) {
+        compose.setContent {
+            LearningmgmtTheme {
+                PhaseViewScreen(
+                    state = state,
+                    onStart = {},
+                    onComplete = {},
+                    onBack = {},
+                    onEdit = if (editable) ({}) else null,
+                    topicHandlers = TopicHandlers(onStart = { startedTopics += it }, onComplete = {}, onRecord = { _, _ -> }),
+                )
+            }
+        }
+    }
+
+    @Test
+    fun anInProgressPhaseOffersTheTopicActions() {
+        showWithTopics(
+            PhaseViewState.Loaded(
+                phase(1, "Basics", Status.IN_PROGRESS),
+                PhaseAction.WaitForTopics(TopicSummary(0, 1)),
+                listOf(topic(1, Status.NOT_STARTED)),
+            ),
+            editable = false,
+        )
+
+        compose.onNodeWithText("Topic 1 · Name 1").assertIsDisplayed()
+        compose.onNodeWithText("Start").performClick()
+        compose.onNodeWithText("Mark as completed").assertIsNotEnabled()
+
+        assertEquals(listOf("t1"), startedTopics)
+    }
+
+    @Test
+    fun aPhaseThatIsNotInProgressShowsItsTopicsReadOnly() {
+        showWithTopics(
+            PhaseViewState.Loaded(phase(1, "Basics", Status.NOT_STARTED), PhaseAction.Start, listOf(topic(1, Status.NOT_STARTED))),
+            editable = false,
+        )
+
+        compose.onNodeWithText("Topic 1 · Name 1").assertIsDisplayed()
+        compose.onNodeWithText("Start").assertDoesNotExist()
+    }
+
+    @Test
+    fun manageModeShowsTheTopicsReadOnlyEvenWhileInProgress() {
+        showWithTopics(
+            PhaseViewState.Loaded(phase(1, "Basics", Status.IN_PROGRESS), PhaseAction.None, listOf(topic(1, Status.NOT_STARTED))),
+            editable = true,
+        )
+
+        compose.onNodeWithText("Topic 1 · Name 1").assertIsDisplayed()
+        compose.onNodeWithText("Start").assertDoesNotExist()
     }
 }

@@ -3,6 +3,7 @@ package dev.fitiavana.learning_mgmt.ui
 import android.content.Context
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
@@ -16,6 +17,7 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.test.core.app.ApplicationProvider
 import dev.fitiavana.learning_mgmt.AppContainer
 import dev.fitiavana.learning_mgmt.ui.theme.LearningmgmtTheme
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
@@ -239,6 +241,24 @@ class AppNavHostTest {
 
         waitForText("Manage phases")
         compose.onAllNodesWithText("Phase 3 · Draft").assertCountEquals(0)
+    }
+
+    @Test
+    fun homeBlocksCompletingThePhaseUntilItsTopicsAreDone() {
+        waitForText("Mark as completed")
+        runBlocking {
+            val basics = container.progressRepository.observeAll().first().values.first().first().phase.id
+            container.topicRepository.add(basics, "Greetings")
+        }
+
+        waitForText("Complete all topics first (0 of 1 done)")
+        compose.onNodeWithText("Mark as completed").assertIsNotEnabled()
+        compose.onNodeWithText("Start").performClick()
+        waitForText("Complete")
+        compose.onNodeWithText("Complete").performClick()
+
+        waitForText("1 of 1 topic completed")
+        compose.onNodeWithText("Mark as completed").assertIsEnabled()
     }
 
     private fun openTopicsOfBasics() {

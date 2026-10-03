@@ -1,5 +1,7 @@
 package dev.fitiavana.learning_mgmt.ui.home
 
+import kotlinx.coroutines.delay
+import dev.fitiavana.learning_mgmt.features.progress.Status
 import dev.fitiavana.learning_mgmt.db.TestEnvironment
 import dev.fitiavana.learning_mgmt.features.phases.Phase
 import kotlinx.coroutines.flow.first
@@ -116,5 +118,49 @@ class HomeViewModelTest {
         viewModel.completeCurrent()
 
         assertTrue(settled().content == HomeContent.NoPhases)
+    }
+
+    private suspend fun spanishWithTopics(): String {
+        val c = env.curricula.create("Spanish")
+        val p = env.phases.add(c, "Basics", "")
+        env.topics.add(p, "Greetings")
+        env.topics.add(p, "Chapter 1", total = 40)
+        return p
+    }
+
+    @Test
+    fun theReadyPhaseCarriesItsTopics() = runBlocking {
+        spanishWithTopics()
+
+        val content = stateWhere { (it.content as? HomeContent.ReadyToStart)?.topics?.size == 2 }.content
+        assertEquals(listOf("Greetings", "Chapter 1"), (content as HomeContent.ReadyToStart).topics.map { it.topic.name })
+    }
+
+    @Test
+    fun theInProgressPhaseCarriesItsTopicsAndTheyMoveForwardWithTheHandlers() = runBlocking {
+        spanishWithTopics()
+        stateWhere { it.content is HomeContent.ReadyToStart }
+        viewModel.startNext()
+        stateWhere { it.content is HomeContent.InProgress }
+
+        viewModel.topicHandlers.onStart("t1")
+
+        val content = stateWhere {
+            (it.content as? HomeContent.InProgress)?.topics?.firstOrNull()?.status == Status.IN_PROGRESS
+        }.content as HomeContent.InProgress
+        assertEquals(listOf("Greetings", "Chapter 1"), content.topics.map { it.topic.name })
+    }
+
+    @Test
+    fun completingThePhaseIsIgnoredWhileItsTopicsAreIncomplete() = runBlocking {
+        spanishWithTopics()
+        stateWhere { it.content is HomeContent.ReadyToStart }
+        viewModel.startNext()
+        stateWhere { it.content is HomeContent.InProgress }
+
+        viewModel.completeCurrent()
+        delay(300)
+
+        assertTrue(viewModel.uiState.value.content is HomeContent.InProgress)
     }
 }

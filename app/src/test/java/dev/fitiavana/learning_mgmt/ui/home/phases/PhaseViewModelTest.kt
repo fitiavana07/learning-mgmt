@@ -1,5 +1,7 @@
 package dev.fitiavana.learning_mgmt.ui.home.phases
 
+import kotlinx.coroutines.delay
+import dev.fitiavana.learning_mgmt.features.progress.TopicSummary
 import dev.fitiavana.learning_mgmt.db.TestEnvironment
 import dev.fitiavana.learning_mgmt.features.phases.Phase
 import dev.fitiavana.learning_mgmt.features.progress.PhaseAction
@@ -85,5 +87,43 @@ class PhaseViewModelTest {
         }
 
         assertEquals(PhaseViewState.NotFound, state)
+    }
+
+    @Test
+    fun theLoadedPhaseCarriesItsTopics() = runBlocking {
+        env.topics.add(first, "Greetings")
+
+        val state = viewModel(first).loaded { it.topics.isNotEmpty() }
+
+        assertEquals(listOf("Greetings"), state.topics.map { it.topic.name })
+    }
+
+    @Test
+    fun theInProgressPhaseWaitsForItsTopicsThenCanBeCompleted() = runBlocking {
+        env.topics.add(first, "Greetings")
+        env.progress.start(first)
+        val viewModel = viewModel(first)
+
+        val waiting = viewModel.loaded { it.topics.isNotEmpty() }
+        assertEquals(PhaseAction.WaitForTopics(TopicSummary(completed = 0, total = 1)), waiting.action)
+
+        viewModel.topicHandlers.onStart("t1")
+        viewModel.loaded { it.topics.firstOrNull()?.status == Status.IN_PROGRESS }
+        viewModel.topicHandlers.onComplete("t1")
+
+        assertEquals(PhaseAction.Complete, viewModel.loaded { it.topics.firstOrNull()?.status == Status.COMPLETED }.action)
+    }
+
+    @Test
+    fun completingIsIgnoredWhileTopicsAreIncomplete() = runBlocking {
+        env.topics.add(first, "Greetings")
+        env.progress.start(first)
+        val viewModel = viewModel(first)
+        viewModel.loaded { it.topics.isNotEmpty() }
+
+        viewModel.complete()
+        delay(300)
+
+        assertEquals(Status.IN_PROGRESS, viewModel.loaded().phase.status)
     }
 }

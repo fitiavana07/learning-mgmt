@@ -1,5 +1,9 @@
 package dev.fitiavana.learning_mgmt.ui.home
 
+import dev.fitiavana.learning_mgmt.ui.common.TopicsSection
+import dev.fitiavana.learning_mgmt.ui.common.TopicHandlers
+import dev.fitiavana.learning_mgmt.features.progress.TopicRules
+import dev.fitiavana.learning_mgmt.features.progress.PhaseRules
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -39,6 +43,7 @@ fun HomeScreen(
     onManageCurricula: () -> Unit,
     onOpenMenu: () -> Unit,
     onShowPhases: () -> Unit,
+    topicHandlers: TopicHandlers = TopicHandlers.None,
 ) {
     val content = state.content
 
@@ -56,7 +61,12 @@ fun HomeScreen(
         },
         bottomBar = {
             when (content) {
-                is HomeContent.InProgress -> PhaseActionBar(content.phase, PhaseAction.Complete, onStart, onComplete)
+                is HomeContent.InProgress -> PhaseActionBar(
+                    content.phase,
+                    PhaseRules.completeAction(TopicRules.summary(content.topics)),
+                    onStart,
+                    onComplete,
+                )
                 is HomeContent.ReadyToStart -> PhaseActionBar(content.phase, PhaseAction.Start, onStart, onComplete)
                 else -> Unit
             }
@@ -77,10 +87,18 @@ fun HomeScreen(
                     onAction = onManageCurricula,
                 )
                 HomeContent.AllCompleted -> EmptyState(title = stringResource(R.string.phases_all_completed))
-                is HomeContent.InProgress -> PhaseContent(content.phase) { StatusChip(Status.IN_PROGRESS) }
-                is HomeContent.ReadyToStart -> PhaseContent(content.phase) {
-                    Text(stringResource(R.string.home_ready_to_begin), style = MaterialTheme.typography.titleMedium)
-                }
+                is HomeContent.InProgress -> PhaseContent(
+                    content.phase,
+                    header = { StatusChip(Status.IN_PROGRESS) },
+                    footer = { TopicsSection(content.topics, editable = true, handlers = topicHandlers) },
+                )
+                is HomeContent.ReadyToStart -> PhaseContent(
+                    content.phase,
+                    header = {
+                        Text(stringResource(R.string.home_ready_to_begin), style = MaterialTheme.typography.titleMedium)
+                    },
+                    footer = { TopicsSection(content.topics, editable = false, handlers = topicHandlers) },
+                )
             }
         }
     }
