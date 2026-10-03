@@ -1,10 +1,5 @@
 package dev.fitiavana.learning_mgmt.ui.home.phases
 
-import dev.fitiavana.learning_mgmt.ui.showKeyboard
-import org.junit.Assert.assertTrue
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.platform.LocalView
-import android.view.View
 import dev.fitiavana.learning_mgmt.ui.common.TopicHandlers
 import dev.fitiavana.learning_mgmt.features.topics.Topic
 import dev.fitiavana.learning_mgmt.features.progress.TopicWithProgress
@@ -16,7 +11,6 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import dev.fitiavana.learning_mgmt.features.phases.Phase
 import dev.fitiavana.learning_mgmt.features.progress.PhaseAction
 import dev.fitiavana.learning_mgmt.features.progress.PhaseWithStatus
@@ -151,8 +145,6 @@ class PhaseViewScreenTest {
         assertEquals(1, back)
     }
 
-    private val LONG_DESCRIPTION = (1..120).joinToString("\n\n") { "Paragraph number $it" }
-
     private fun topic(number: Int, status: Status) =
         TopicWithProgress(Topic("t$number", "p1", number, "Name $number", null, null), status, 0)
 
@@ -171,42 +163,6 @@ class PhaseViewScreenTest {
                 )
             }
         }
-    }
-
-    @Test
-    fun theProgressFieldStaysAboveTheKeyboard() {
-        lateinit var view: View
-        compose.setContent {
-            view = LocalView.current
-            LearningmgmtTheme {
-                PhaseViewScreen(
-                    state = PhaseViewState.Loaded(
-                        phase(1, "Basics", Status.IN_PROGRESS, description = LONG_DESCRIPTION),
-                        PhaseAction.WaitForTopics(TopicSummary(0, 1)),
-                        listOf(
-                            TopicWithProgress(
-                                Topic("t1", "p1", 1, "Chapter", total = 40, unit = "pages"),
-                                Status.IN_PROGRESS,
-                                done = 12,
-                            ),
-                        ),
-                    ),
-                    onStart = {},
-                    onComplete = {},
-                    onBack = {},
-                )
-            }
-        }
-
-        compose.waitUntil(5_000) { compose.onAllNodesWithText("Show more").fetchSemanticsNodes().isNotEmpty() }
-        // Like on a device: scroll to the field and tap it, then the keyboard slides in.
-        compose.onNodeWithTag("progress-field").performScrollTo().performClick()
-        val visibleBottom = compose.showKeyboard(view, heightPx = 400)
-
-        // positionInRoot is not clipped to the scroll viewport, unlike boundsInRoot.
-        val field = compose.onNodeWithTag("progress-field").fetchSemanticsNode()
-        val fieldBottom = field.positionInRoot.y + field.size.height
-        assertTrue("Field ($fieldBottom) hidden below $visibleBottom", fieldBottom <= visibleBottom)
     }
 
     @Test

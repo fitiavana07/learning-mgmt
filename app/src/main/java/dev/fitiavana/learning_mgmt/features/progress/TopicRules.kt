@@ -36,6 +36,9 @@ object TopicRules {
         )
     }
 
+    /** One more than [current] (a blank entry counts as 0), capped at [total]. */
+    fun increase(current: Int?, total: Int): Int = ((current ?: 0) + 1).coerceAtMost(total)
+
     /** Changes the total of a quantified topic, clamping the recorded progress to it. */
     fun withTotal(topic: TopicWithProgress, total: Int): TopicWithProgress =
         record(topic.copy(topic = topic.topic.copy(total = total)), topic.done)

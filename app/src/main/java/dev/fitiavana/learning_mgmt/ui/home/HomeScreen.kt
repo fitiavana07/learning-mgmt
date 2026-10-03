@@ -6,7 +6,6 @@ import dev.fitiavana.learning_mgmt.features.progress.TopicRules
 import dev.fitiavana.learning_mgmt.features.progress.PhaseRules
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -49,7 +48,6 @@ fun HomeScreen(
     val content = state.content
 
     Scaffold(
-        modifier = Modifier.imePadding(),
         topBar = {
             TopAppBar(
                 title = { Text(state.curriculumName ?: stringResource(R.string.app_name)) },

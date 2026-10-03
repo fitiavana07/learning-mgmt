@@ -87,6 +87,8 @@
     <string name="topic_progress">%1$d / %2$d</string>
     <string name="topic_progress_with_unit">%1$d / %2$d %3$s</string>
     <string name="topic_field_done">Done</string>
+    <string name="topic_update_progress">Update progress</string>
+    <string name="topic_increase_progress">Add one</string>
     <string name="action_start_topic">Start</string>
     <string name="action_complete_topic">Complete</string>
     <string name="action_update_progress">Update</string>

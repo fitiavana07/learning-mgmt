@@ -3,7 +3,6 @@ package dev.fitiavana.learning_mgmt.ui.home.phases
 import dev.fitiavana.learning_mgmt.ui.common.TopicsSection
 import dev.fitiavana.learning_mgmt.ui.common.TopicHandlers
 import dev.fitiavana.learning_mgmt.features.progress.Status
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -36,7 +35,6 @@ fun PhaseViewScreen(
     topicHandlers: TopicHandlers = TopicHandlers.None,
 ) {
     Scaffold(
-        modifier = Modifier.imePadding(),
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.phases_title)) },

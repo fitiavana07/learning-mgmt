@@ -65,6 +65,19 @@ class TopicRulesTest {
     }
 
     @Test
+    fun increasingAddsOneUpToTheTotal() {
+        assertEquals(13, TopicRules.increase(12, total = 40))
+        assertEquals(40, TopicRules.increase(39, total = 40))
+        assertEquals(40, TopicRules.increase(40, total = 40))
+        assertEquals(40, TopicRules.increase(95, total = 40))
+    }
+
+    @Test
+    fun increasingABlankEntryStartsFromZero() {
+        assertEquals(1, TopicRules.increase(null, total = 40))
+    }
+
+    @Test
     fun progressCannotBeRecordedOnASimpleTopic() {
         val topic = t(1, inProgress)
 
