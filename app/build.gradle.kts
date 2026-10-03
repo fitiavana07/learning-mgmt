@@ -101,7 +101,6 @@ dependencies {
     implementation(libs.markdown.renderer.m3)
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
-    testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.junit)
     testImplementation(libs.androidx.compose.ui.test.junit4)
     // Compose's UI test pulls an Espresso too old for the SDK Robolectric runs on.
