@@ -10,7 +10,13 @@ import dev.fitiavana.learning_mgmt.AppContainer
 
 /** The editor wired to its ViewModel: a new phase when [phaseId] is null, otherwise that phase. */
 @Composable
-fun PhaseEditorRoute(container: AppContainer, curriculumId: String, phaseId: String?, onClose: () -> Unit) {
+fun PhaseEditorRoute(
+    container: AppContainer,
+    curriculumId: String,
+    phaseId: String?,
+    onClose: () -> Unit,
+    onManageTopics: () -> Unit,
+) {
     val editor: PhaseEditorViewModel = viewModel(
         factory = viewModelFactory {
             initializer { PhaseEditorViewModel(curriculumId, phaseId, container.phaseRepository) }
@@ -24,5 +30,6 @@ fun PhaseEditorRoute(container: AppContainer, curriculumId: String, phaseId: Str
         onPreviewChange = editor::setPreview,
         onSave = editor::save,
         onClose = onClose,
+        onManageTopics = onManageTopics,
     )
 }

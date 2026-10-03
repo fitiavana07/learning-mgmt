@@ -1,7 +1,6 @@
-package dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.phaseeditor
+package dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.managetopics.topiceditor
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,12 +10,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -33,23 +30,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.fitiavana.learning_mgmt.R
 import dev.fitiavana.learning_mgmt.ui.common.ConfirmDialog
 import dev.fitiavana.learning_mgmt.ui.common.EmptyState
-import dev.fitiavana.learning_mgmt.ui.common.MarkdownText
 import dev.fitiavana.learning_mgmt.ui.common.TextInput
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PhaseEditorScreen(
-    state: PhaseEditorState,
+fun TopicEditorScreen(
+    state: TopicEditorState,
     onNameChange: (String) -> Unit,
-    onDescriptionChange: (String) -> Unit,
-    onPreviewChange: (Boolean) -> Unit,
+    onQuantifiedChange: (Boolean) -> Unit,
+    onTotalChange: (String) -> Unit,
+    onUnitChange: (String) -> Unit,
     onSave: () -> Unit,
     onClose: () -> Unit,
-    onManageTopics: (() -> Unit)? = null,
 ) {
     var confirmDiscard by remember { mutableStateOf(false) }
     val requestClose = { if (state.dirty) confirmDiscard = true else onClose() }
@@ -62,7 +59,7 @@ fun PhaseEditorScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(stringResource(if (state.isNew) R.string.editor_title_new else R.string.editor_title_edit))
+                    Text(stringResource(if (state.isNew) R.string.topics_new else R.string.topic_editor_title_edit))
                 },
                 navigationIcon = {
                     IconButton(onClick = requestClose) {
@@ -82,17 +79,17 @@ fun PhaseEditorScreen(
         when {
             state.loading -> Unit
             state.notFound -> EmptyState(
-                title = stringResource(R.string.phase_not_found),
+                title = stringResource(R.string.topic_not_found),
                 modifier = Modifier.padding(padding),
             )
-            else -> EditorForm(state, onNameChange, onDescriptionChange, onPreviewChange, onManageTopics, Modifier.padding(padding))
+            else -> EditorForm(state, onNameChange, onQuantifiedChange, onTotalChange, onUnitChange, Modifier.padding(padding))
         }
     }
 
     if (confirmDiscard) {
         ConfirmDialog(
             title = stringResource(R.string.editor_discard_title),
-            message = stringResource(R.string.editor_discard_message),
+            message = stringResource(R.string.topic_discard_message),
             confirmLabel = stringResource(R.string.editor_discard_confirm),
             destructive = true,
             onConfirm = { confirmDiscard = false; onClose() },
@@ -103,11 +100,11 @@ fun PhaseEditorScreen(
 
 @Composable
 private fun EditorForm(
-    state: PhaseEditorState,
+    state: TopicEditorState,
     onNameChange: (String) -> Unit,
-    onDescriptionChange: (String) -> Unit,
-    onPreviewChange: (Boolean) -> Unit,
-    onManageTopics: (() -> Unit)?,
+    onQuantifiedChange: (Boolean) -> Unit,
+    onTotalChange: (String) -> Unit,
+    onUnitChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -127,25 +124,28 @@ private fun EditorForm(
             keyboardOptions = TextInput.keyboardOptions,
             modifier = Modifier.fillMaxWidth().testTag("name-field"),
         )
-        if (!state.isNew && onManageTopics != null) {
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.editor_topics)) },
-                supportingContent = { Text(stringResource(R.string.editor_topics_hint)) },
-                trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
-                modifier = Modifier.clickable(onClick = onManageTopics),
-            )
-        }
-        WriteOrPreviewToggle(state.preview, onPreviewChange, Modifier.padding(vertical = 8.dp))
-        if (state.preview) {
-            MarkdownText(state.description)
-        } else {
+        KindToggle(state.quantified, onQuantifiedChange, Modifier.padding(vertical = 8.dp))
+        if (state.quantified) {
             OutlinedTextField(
-                value = state.description,
-                onValueChange = onDescriptionChange,
-                label = { Text(stringResource(R.string.editor_description)) },
-                minLines = 8,
-                keyboardOptions = TextInput.keyboardOptions,
-                modifier = Modifier.fillMaxWidth().testTag("description-field"),
+                value = state.total,
+                onValueChange = { onTotalChange(it.filter(Char::isDigit)) },
+                label = { Text(stringResource(R.string.topic_field_total)) },
+                isError = state.totalError,
+                supportingText = if (state.totalError) {
+                    { Text(stringResource(R.string.topic_total_invalid)) }
+                } else {
+                    null
+                },
+                singleLine = true,
+                keyboardOptions = TextInput.keyboardOptions.copy(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth().testTag("total-field"),
+            )
+            OutlinedTextField(
+                value = state.unit,
+                onValueChange = onUnitChange,
+                label = { Text(stringResource(R.string.topic_field_unit)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp).testTag("unit-field"),
             )
         }
     }
@@ -153,13 +153,13 @@ private fun EditorForm(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun WriteOrPreviewToggle(preview: Boolean, onPreviewChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
-    val labels = listOf(R.string.editor_write to false, R.string.editor_preview to true)
+private fun KindToggle(quantified: Boolean, onQuantifiedChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+    val labels = listOf(R.string.topic_kind_simple to false, R.string.topic_kind_quantified to true)
     SingleChoiceSegmentedButtonRow(modifier.fillMaxWidth()) {
-        labels.forEachIndexed { index, (label, isPreview) ->
+        labels.forEachIndexed { index, (label, isQuantified) ->
             SegmentedButton(
-                selected = preview == isPreview,
-                onClick = { onPreviewChange(isPreview) },
+                selected = quantified == isQuantified,
+                onClick = { onQuantifiedChange(isQuantified) },
                 shape = SegmentedButtonDefaults.itemShape(index, labels.size),
             ) {
                 Text(stringResource(label))

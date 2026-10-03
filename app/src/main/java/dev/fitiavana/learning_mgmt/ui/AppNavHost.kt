@@ -32,6 +32,9 @@ import dev.fitiavana.learning_mgmt.ui.managecurricula.ManageCurriculaViewModel
 import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.ManagePhasesScreen
 import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.ManagePhasesViewModel
 import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.phaseeditor.ManagedPhaseViewModel
+import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.managetopics.ManageTopicsScreen
+import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.managetopics.ManageTopicsViewModel
+import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.managetopics.topiceditor.TopicEditorRoute
 import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.phaseeditor.PhaseEditorRoute
 
 private object Routes {
@@ -49,9 +52,17 @@ private object Routes {
     const val MANAGED_PHASE = "$MANAGE_PHASES/phases/{$PHASE_ID}"
     const val EDIT_PHASE = "$MANAGED_PHASE/edit"
     const val NEW_PHASE = "$MANAGE_PHASES/new-phase"
+    const val TOPICS = "$MANAGED_PHASE/topics"
+    const val TOPIC_ID = "topicId"
+    const val NEW_TOPIC = "$TOPICS/new-topic"
+    const val EDIT_TOPIC = "$TOPICS/{$TOPIC_ID}/edit"
     fun managedPhase(curriculumId: String, phaseId: String) = "${managePhases(curriculumId)}/phases/$phaseId"
     fun editPhase(curriculumId: String, phaseId: String) = "${managedPhase(curriculumId, phaseId)}/edit"
     fun newPhase(curriculumId: String) = "${managePhases(curriculumId)}/new-phase"
+    fun topics(curriculumId: String, phaseId: String) = "${managedPhase(curriculumId, phaseId)}/topics"
+    fun newTopic(curriculumId: String, phaseId: String) = "${topics(curriculumId, phaseId)}/new-topic"
+    fun editTopic(curriculumId: String, phaseId: String, topicId: String) =
+        "${topics(curriculumId, phaseId)}/$topicId/edit"
 }
 
 private val curriculumArguments = listOf(navArgument(Routes.CURRICULUM_ID) { type = NavType.StringType })
@@ -59,7 +70,11 @@ private val managedPhaseArguments = curriculumArguments +
     navArgument(Routes.PHASE_ID) { type = NavType.StringType }
 
 private fun NavBackStackEntry.curriculumId() = checkNotNull(arguments?.getString(Routes.CURRICULUM_ID))
+private val editTopicArguments = managedPhaseArguments +
+    navArgument(Routes.TOPIC_ID) { type = NavType.StringType }
+
 private fun NavBackStackEntry.phaseId() = checkNotNull(arguments?.getString(Routes.PHASE_ID))
+private fun NavBackStackEntry.topicId() = checkNotNull(arguments?.getString(Routes.TOPIC_ID))
 
 private const val SLIDE_MS = 300
 private const val BEHIND_FRACTION = 4
@@ -182,10 +197,50 @@ fun AppNavHost(container: AppContainer) {
             )
         }
         animatedComposable(Routes.EDIT_PHASE, arguments = managedPhaseArguments) { entry ->
-            PhaseEditorRoute(container, entry.curriculumId(), entry.phaseId(), onClose = { navController.popBackStack() })
+            val curriculumId = entry.curriculumId()
+            val phaseId = entry.phaseId()
+            PhaseEditorRoute(
+                container,
+                curriculumId,
+                phaseId,
+                onClose = { navController.popBackStack() },
+                onManageTopics = { navController.navigate(Routes.topics(curriculumId, phaseId)) },
+            )
+        }
+        animatedComposable(Routes.TOPICS, arguments = managedPhaseArguments) { entry ->
+            val curriculumId = entry.curriculumId()
+            val phaseId = entry.phaseId()
+            val manage: ManageTopicsViewModel = viewModel(
+                factory = viewModelFactory {
+                    initializer {
+                        ManageTopicsViewModel(curriculumId, phaseId, container.progressRepository, container.topicRepository)
+                    }
+                },
+            )
+            val state by manage.uiState.collectAsStateWithLifecycle()
+            ManageTopicsScreen(
+                state = state,
+                onAdd = { navController.navigate(Routes.newTopic(curriculumId, phaseId)) },
+                onTopicClick = { navController.navigate(Routes.editTopic(curriculumId, phaseId, it)) },
+                onDelete = manage::delete,
+                onMove = manage::move,
+                onBack = { navController.popBackStack() },
+            )
+        }
+        animatedComposable(Routes.NEW_TOPIC, arguments = managedPhaseArguments) { entry ->
+            TopicEditorRoute(container, entry.phaseId(), topicId = null, onClose = { navController.popBackStack() })
+        }
+        animatedComposable(Routes.EDIT_TOPIC, arguments = editTopicArguments) { entry ->
+            TopicEditorRoute(container, entry.phaseId(), entry.topicId(), onClose = { navController.popBackStack() })
         }
         animatedComposable(Routes.NEW_PHASE, arguments = curriculumArguments) { entry ->
-            PhaseEditorRoute(container, entry.curriculumId(), phaseId = null, onClose = { navController.popBackStack() })
+            PhaseEditorRoute(
+                container,
+                entry.curriculumId(),
+                phaseId = null,
+                onClose = { navController.popBackStack() },
+                onManageTopics = {},
+            )
         }
         animatedComposable(Routes.PHASES) {
             val phases: PhasesViewModel = viewModel(

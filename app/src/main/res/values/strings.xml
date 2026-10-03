@@ -61,6 +61,26 @@
     <string name="phases_delete_title">Delete Phase %1$d?</string>
     <string name="phases_delete_message">Later phases are renumbered.</string>
     <string name="phases_delete_in_progress">This phase is in progress, and its progress will be lost.</string>
+    <string name="editor_topics">Topics</string>
+    <string name="editor_topics_hint">Add, reorder and edit the topics of this phase</string>
+
+    <string name="manage_topics">Manage topics</string>
+    <string name="topic_title">Topic %1$d · %2$s</string>
+    <string name="topics_new">New topic</string>
+    <string name="topics_none_yet">No topics yet</string>
+    <string name="topics_locked">This phase is completed, so its topics can\'t be changed.</string>
+    <string name="topics_options">Options for topic %1$d</string>
+    <string name="topics_delete_title">Delete Topic %1$d?</string>
+    <string name="topics_delete_message">Later topics are renumbered. Its progress will be lost.</string>
+    <string name="topic_total_with_unit">%1$d %2$s</string>
+    <string name="topic_editor_title_edit">Edit topic</string>
+    <string name="topic_not_found">Topic not found</string>
+    <string name="topic_kind_simple">Simple</string>
+    <string name="topic_kind_quantified">Quantified</string>
+    <string name="topic_field_total">Total</string>
+    <string name="topic_field_unit">Unit (optional)</string>
+    <string name="topic_total_invalid">Enter a whole number above 0</string>
+    <string name="topic_discard_message">Your changes to this topic will be lost.</string>
     <plurals name="phase_count">
         <item quantity="one">%1$d phase</item>
         <item quantity="other">%1$d phases</item>

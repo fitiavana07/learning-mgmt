@@ -50,6 +50,8 @@ class PhaseEditorScreenTest {
 
     private lateinit var view: View
 
+    private var topicsOpened = 0
+
     private fun show(state: PhaseEditorState = editing) {
         compose.setContent {
             view = LocalView.current
@@ -62,9 +64,26 @@ class PhaseEditorScreenTest {
                     onPreviewChange = { previews += it },
                     onSave = { saves++ },
                     onClose = { closes++ },
+                    onManageTopics = { topicsOpened++ },
                 )
             }
         }
+    }
+
+    @Test
+    fun anExistingPhaseOffersToManageItsTopics() {
+        show()
+
+        compose.onNodeWithText("Topics").performClick()
+
+        assertEquals(1, topicsOpened)
+    }
+
+    @Test
+    fun aNewPhaseHasNoTopicsEntryYet() {
+        show(PhaseEditorState(loading = false))
+
+        compose.onNodeWithText("Topics").assertDoesNotExist()
     }
 
     @Test

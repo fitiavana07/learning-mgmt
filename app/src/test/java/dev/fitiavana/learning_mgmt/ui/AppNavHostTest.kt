@@ -241,6 +241,55 @@ class AppNavHostTest {
         compose.onAllNodesWithText("Phase 3 · Draft").assertCountEquals(0)
     }
 
+    private fun openTopicsOfBasics() {
+        openManagePhases()
+        waitForText("Phase 1 · Basics")
+        compose.onNodeWithText("Phase 1 · Basics").performClick()
+        waitForText("In progress")
+        compose.onNodeWithContentDescription("Edit phase").performClick()
+        waitForText("Edit phase")
+        compose.onNodeWithText("Topics").performClick()
+        waitForText("No topics yet")
+    }
+
+    @Test
+    fun addingATopicFromThePhaseEditorListsItNumbered() {
+        openTopicsOfBasics()
+
+        compose.onNodeWithContentDescription("New topic").performClick()
+        waitForText("Save")
+        compose.onNodeWithTag("name-field").performTextReplacement("Greetings")
+        compose.onNodeWithText("Save").performClick()
+
+        waitForText("Topic 1 · Greetings")
+        compose.onNodeWithText("Phase 1 · Basics").assertIsDisplayed()
+    }
+
+    @Test
+    fun addingAQuantifiedTopicKeepsItsTotalAndUnit() {
+        openTopicsOfBasics()
+
+        compose.onNodeWithContentDescription("New topic").performClick()
+        waitForText("Quantified")
+        compose.onNodeWithTag("name-field").performTextReplacement("Chapter 1")
+        compose.onNodeWithText("Quantified").performClick()
+        compose.onNodeWithTag("total-field").performTextReplacement("40")
+        compose.onNodeWithTag("unit-field").performTextReplacement("pages")
+        compose.onNodeWithText("Save").performClick()
+
+        waitForText("Topic 1 · Chapter 1")
+        compose.onNodeWithText("40 pages").assertIsDisplayed()
+    }
+
+    @Test
+    fun backFromTheTopicsListReturnsToThePhaseEditor() {
+        openTopicsOfBasics()
+
+        compose.onNodeWithContentDescription("Back").performClick()
+
+        waitForText("Edit phase")
+    }
+
     @Test
     fun backFromManagePhasesReturnsToManageCurricula() {
         openManagePhases()
