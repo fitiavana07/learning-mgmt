@@ -11,14 +11,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.fitiavana.learning_mgmt.R
 import dev.fitiavana.learning_mgmt.features.phases.Phase
 
-/** A phase's "Phase N · Name" title and rendered description, under an optional [header]. */
+/**
+ * A phase's "Phase N · Name" title and rendered (collapsible) description, under an optional
+ * [header] and above an optional [footer].
+ */
 @Composable
-fun PhaseContent(phase: Phase, modifier: Modifier = Modifier, header: @Composable () -> Unit = {}) {
+fun PhaseContent(
+    phase: Phase,
+    modifier: Modifier = Modifier,
+    header: @Composable () -> Unit = {},
+    footer: @Composable () -> Unit = {},
+) {
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
         header()
         Spacer(Modifier.height(8.dp))
@@ -27,6 +36,9 @@ fun PhaseContent(phase: Phase, modifier: Modifier = Modifier, header: @Composabl
             style = MaterialTheme.typography.headlineSmall,
         )
         Spacer(Modifier.height(16.dp))
-        MarkdownText(phase.description)
+        CollapsibleContent(contentModifier = Modifier.testTag("phase-description")) {
+            MarkdownText(phase.description)
+        }
+        footer()
     }
 }
