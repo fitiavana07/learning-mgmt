@@ -1,15 +1,12 @@
 package dev.fitiavana.learning_mgmt.ui.managecurricula.managephases
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -29,25 +26,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import dev.fitiavana.learning_mgmt.R
 import dev.fitiavana.learning_mgmt.features.progress.Status
 import dev.fitiavana.learning_mgmt.ui.common.ConfirmDialog
 import dev.fitiavana.learning_mgmt.ui.common.EmptyState
+import dev.fitiavana.learning_mgmt.ui.common.ReorderableColumn
 import dev.fitiavana.learning_mgmt.ui.common.StatusIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,10 +53,6 @@ fun ManagePhasesScreen(
     onBack: () -> Unit,
 ) {
     var toDelete by remember { mutableStateOf<PhaseRow?>(null) }
-    var draggedId by remember { mutableStateOf<String?>(null) }
-    var dragOffset by remember { mutableFloatStateOf(0f) }
-    var rowHeight by remember { mutableFloatStateOf(0f) }
-    val rows by rememberUpdatedState(state.rows)
 
     Scaffold(
         topBar = {
@@ -99,37 +87,19 @@ fun ManagePhasesScreen(
                 modifier = Modifier.padding(padding),
             )
         } else {
-            LazyColumn(Modifier.padding(padding).fillMaxSize()) {
-                items(state.rows, key = { it.id }) { row ->
-                    val dragging = draggedId == row.id
-                    PhaseListItem(
-                        row = row,
-                        dragging = dragging,
-                        onClick = { onPhaseClick(row.id) },
-                        onDelete = { toDelete = row },
-                        modifier = Modifier
-                            .onSizeChanged { rowHeight = it.height.toFloat() }
-                            .zIndex(if (dragging) 1f else 0f)
-                            .graphicsLayer {
-                                translationY = if (dragging) dragOffset else 0f
-                                shadowElevation = if (dragging) 8.dp.toPx() else 0f
-                            }
-                            .pointerInput(row.id) {
-                                detectDragGesturesAfterLongPress(
-                                    onDragStart = { draggedId = row.id; dragOffset = 0f },
-                                    onDrag = { change, amount -> change.consume(); dragOffset += amount.y },
-                                    onDragEnd = {
-                                        val from = rows.indexOfFirst { it.id == row.id }
-                                        val to = dragTargetIndex(from, dragOffset, rowHeight, rows.size)
-                                        draggedId = null
-                                        dragOffset = 0f
-                                        if (from >= 0 && to != from) onMove(from, to)
-                                    },
-                                    onDragCancel = { draggedId = null; dragOffset = 0f },
-                                )
-                            },
-                    )
-                }
+            ReorderableColumn(
+                items = state.rows,
+                key = { it.id },
+                onMove = onMove,
+                modifier = Modifier.padding(padding).fillMaxSize(),
+            ) { row, dragging, rowModifier ->
+                PhaseListItem(
+                    row = row,
+                    dragging = dragging,
+                    onClick = { onPhaseClick(row.id) },
+                    onDelete = { toDelete = row },
+                    modifier = rowModifier,
+                )
             }
         }
     }

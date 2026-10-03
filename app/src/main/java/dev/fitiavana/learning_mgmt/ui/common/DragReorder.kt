@@ -1,4 +1,4 @@
-package dev.fitiavana.learning_mgmt.ui.managecurricula.managephases
+package dev.fitiavana.learning_mgmt.ui.common
 
 import kotlin.math.roundToInt
 
