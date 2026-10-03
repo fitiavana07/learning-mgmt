@@ -19,7 +19,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/** Screen is 800dp tall, so the collapsed description is at most 320dp (40%). */
+/** Screen is 800dp tall, so the collapsed description is at most 160dp (20%). */
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "w360dp-h800dp")
 class PhaseContentTest {
@@ -56,13 +56,13 @@ class PhaseContentTest {
     }
 
     @Test
-    fun aLongDescriptionIsCollapsedToFortyPercentOfTheScreen() {
+    fun aLongDescriptionIsCollapsedToTwentyPercentOfTheScreen() {
         show(long)
 
         waitForText("Show more")
 
-        assertTrue(descriptionHeightDp() <= 320.5f)
-        compose.onNodeWithTag("phase-description").assertHeightIsAtLeast(300.dp)
+        assertTrue(descriptionHeightDp() <= 160.5f)
+        compose.onNodeWithTag("phase-description").assertHeightIsAtLeast(140.dp)
     }
 
     @Test
@@ -73,11 +73,11 @@ class PhaseContentTest {
         compose.onNodeWithText("Show more").performClick()
         compose.onNodeWithText("Show less").assertExists()
         compose.onNodeWithText("Show more").assertDoesNotExist()
-        compose.onNodeWithTag("phase-description").assertHeightIsAtLeast(321.dp)
+        compose.onNodeWithTag("phase-description").assertHeightIsAtLeast(161.dp)
 
         compose.onNodeWithText("Show less").performScrollTo().performClick()
         compose.onNodeWithText("Show more").assertIsDisplayed()
-        assertTrue(descriptionHeightDp() <= 320.5f)
+        assertTrue(descriptionHeightDp() <= 160.5f)
     }
 
     @Test

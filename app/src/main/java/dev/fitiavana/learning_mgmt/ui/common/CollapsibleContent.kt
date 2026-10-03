@@ -39,7 +39,7 @@ private val FADE_HEIGHT = 40.dp
 fun CollapsibleContent(
     modifier: Modifier = Modifier,
     contentModifier: Modifier = Modifier,
-    maxScreenFraction: Float = 0.4f,
+    maxScreenFraction: Float = 0.2f,
     content: @Composable () -> Unit,
 ) {
     val maxHeight = LocalConfiguration.current.screenHeightDp.dp * maxScreenFraction
