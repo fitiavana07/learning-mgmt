@@ -8,11 +8,20 @@ import dev.fitiavana.learning_mgmt.features.phases.Phase
 import dev.fitiavana.learning_mgmt.features.phases.PhaseDao
 import dev.fitiavana.learning_mgmt.features.progress.PhaseStatus
 import dev.fitiavana.learning_mgmt.features.progress.PhaseStatusDao
+import dev.fitiavana.learning_mgmt.features.progress.TopicProgress
+import dev.fitiavana.learning_mgmt.features.progress.TopicProgressDao
+import dev.fitiavana.learning_mgmt.features.topics.Topic
+import dev.fitiavana.learning_mgmt.features.topics.TopicDao
 
 /** Registers the entities and DAOs; each feature package owns its own @Entity and DAO. */
-@Database(entities = [Curriculum::class, Phase::class, PhaseStatus::class], version = 1)
+@Database(
+    entities = [Curriculum::class, Phase::class, PhaseStatus::class, Topic::class, TopicProgress::class],
+    version = 2,
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun curriculumDao(): CurriculumDao
     abstract fun phaseDao(): PhaseDao
     abstract fun phaseStatusDao(): PhaseStatusDao
+    abstract fun topicDao(): TopicDao
+    abstract fun topicProgressDao(): TopicProgressDao
 }
