@@ -27,6 +27,7 @@ class TopicsSectionTest {
 
     private val started = mutableListOf<String>()
     private val completed = mutableListOf<String>()
+    private val recorded = mutableListOf<Pair<String, Int>>()
 
     private fun t(number: Int, status: Status, total: Int? = null, done: Int = 0, unit: String? = null) =
         TopicWithProgress(Topic("t$number", "p", number, "Name $number", total, unit), status, done)
@@ -40,7 +41,7 @@ class TopicsSectionTest {
                     handlers = TopicHandlers(
                         onStart = { started += it },
                         onComplete = { completed += it },
-                        onRecord = { _, _ -> },
+                        onRecord = { id, done -> recorded += id to done },
                     ),
                 )
             }
@@ -122,6 +123,29 @@ class TopicsSectionTest {
         compose.onNodeWithContentDescription("Update progress").assertIsDisplayed()
         compose.onNodeWithTag("progress-field").assertDoesNotExist()
         compose.onNodeWithText("Update").assertDoesNotExist()
+    }
+
+    @Test
+    fun addingOneRecordsTheIncrementedProgressWithoutAConfirmation() {
+        show(listOf(t(1, Status.IN_PROGRESS, total = 40, done = 12)))
+
+        compose.onNodeWithContentDescription("Add one").performClick()
+
+        assertEquals(listOf("t1" to 13), recorded)
+    }
+
+    @Test
+    fun onlyTheCurrentQuantifiedTopicCanAddOne() {
+        show(
+            listOf(
+                t(1, Status.COMPLETED, total = 40, done = 40),
+                t(2, Status.IN_PROGRESS, total = 40, done = 12),
+                t(3, Status.NOT_STARTED, total = 40),
+                t(4, Status.NOT_STARTED),
+            ),
+        )
+
+        compose.onAllNodesWithContentDescription("Add one").assertCountEquals(1)
     }
 
     @Test

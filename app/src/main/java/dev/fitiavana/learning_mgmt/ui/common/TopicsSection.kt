@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -122,6 +124,17 @@ private fun TopicRowItem(
                     style = MaterialTheme.typography.labelMedium,
                 )
                 if (canProgress) {
+                    // The most frequent action, so the one filled (primary) button; it saves right away.
+                    FilledIconButton(
+                        onClick = { handlers.onRecord(id, TopicRules.increase(topic.done, total)) },
+                        modifier = Modifier.size(32.dp),
+                    ) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = stringResource(R.string.topic_increase_progress),
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
                     IconButton(onClick = { editing = true }, modifier = Modifier.size(32.dp)) {
                         Icon(
                             Icons.Default.Edit,
@@ -145,11 +158,11 @@ private fun TopicRowItem(
     }
 }
 
-/** Asks for the amount done on [topic]; the confirm button stays disabled until it is a number. */
+/** Asks for the amount done on [topic] by hand; the confirm button stays disabled until it is a number. */
 @Composable
 private fun ProgressDialog(topic: TopicWithProgress, onRecord: (Int) -> Unit, onDismiss: () -> Unit) {
     var text by rememberSaveable { mutableStateOf(topic.done.toString()) }
-    val total = topic.topic.total ?: return
+    if (topic.topic.total == null) return
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.topic_update_progress)) },
@@ -163,9 +176,9 @@ private fun ProgressDialog(topic: TopicWithProgress, onRecord: (Int) -> Unit, on
                     keyboardOptions = TextInput.keyboardOptions.copy(keyboardType = KeyboardType.Number),
                     modifier = Modifier.weight(1f).testTag("progress-field"),
                 )
-                // The most frequent action, so the one filled (primary) button of the dialog.
-                FilledIconButton(onClick = { text = TopicRules.increase(text.toIntOrNull(), total).toString() }) {
-                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.topic_increase_progress))
+                // Undoes a "+", so a secondary (outlined) button; it only edits the field, Update saves.
+                OutlinedIconButton(onClick = { text = TopicRules.decrease(text.toIntOrNull()).toString() }) {
+                    Icon(Icons.Default.Remove, contentDescription = stringResource(R.string.topic_decrease_progress))
                 }
             }
         },

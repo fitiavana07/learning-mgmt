@@ -89,6 +89,7 @@
     <string name="topic_field_done">Done</string>
     <string name="topic_update_progress">Update progress</string>
     <string name="topic_increase_progress">Add one</string>
+    <string name="topic_decrease_progress">Remove one</string>
     <string name="action_start_topic">Start</string>
     <string name="action_complete_topic">Complete</string>
     <string name="action_update_progress">Update</string>

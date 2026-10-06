@@ -78,6 +78,18 @@ class TopicRulesTest {
     }
 
     @Test
+    fun decreasingRemovesOneDownToZero() {
+        assertEquals(11, TopicRules.decrease(12))
+        assertEquals(0, TopicRules.decrease(1))
+        assertEquals(0, TopicRules.decrease(0))
+    }
+
+    @Test
+    fun decreasingABlankEntryStaysAtZero() {
+        assertEquals(0, TopicRules.decrease(null))
+    }
+
+    @Test
     fun progressCannotBeRecordedOnASimpleTopic() {
         val topic = t(1, inProgress)
 
