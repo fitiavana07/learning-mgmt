@@ -109,4 +109,29 @@
         <item quantity="one">This also deletes its %1$d phase and its progress.</item>
         <item quantity="other">This also deletes its %1$d phases and their progress.</item>
     </plurals>
+
+    <string name="action_restore">Restore</string>
+    <string name="backup_menu">Backup and restore</string>
+    <string name="backup_menu_backup">Back up…</string>
+    <string name="backup_menu_restore">Restore…</string>
+    <string name="backup_working">Working…</string>
+    <string name="backup_restore_title">Restore from backup?</string>
+    <string name="backup_counts" tools:ignore="PluralsCandidate">%1$s, %2$s, %3$s</string>
+    <string name="backup_restore_file" tools:ignore="PluralsCandidate">Backup file: %1$s, exported %2$s.</string>
+    <string name="backup_restore_current" tools:ignore="PluralsCandidate">Current data: %1$s.</string>
+    <string name="backup_restore_warning">This will erase all current data and cannot be undone.</string>
+    <string name="backup_saved">Backup saved</string>
+    <string name="backup_failed">The backup could not be saved.</string>
+    <string name="backup_file_unreadable">The file could not be read.</string>
+    <string name="backup_restored">Restore complete</string>
+    <string name="backup_restore_rejected" tools:ignore="PluralsCandidate">This file can\'t be restored: %1$s</string>
+    <string name="backup_version_mismatch" tools:ignore="PluralsCandidate">This backup was made with a different app version (database version %1$d, this app uses %2$d).</string>
+    <plurals name="backup_curricula_count">
+        <item quantity="one">%1$d curriculum</item>
+        <item quantity="other">%1$d curricula</item>
+    </plurals>
+    <plurals name="backup_topics_count">
+        <item quantity="one">%1$d topic</item>
+        <item quantity="other">%1$d topics</item>
+    </plurals>
 </resources>

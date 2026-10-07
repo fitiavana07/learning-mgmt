@@ -27,7 +27,7 @@ import dev.fitiavana.learning_mgmt.ui.home.phases.PhaseViewModel
 import dev.fitiavana.learning_mgmt.ui.home.phases.PhaseViewScreen
 import dev.fitiavana.learning_mgmt.ui.home.phases.PhasesScreen
 import dev.fitiavana.learning_mgmt.ui.home.phases.PhasesViewModel
-import dev.fitiavana.learning_mgmt.ui.managecurricula.ManageCurriculaScreen
+import dev.fitiavana.learning_mgmt.ui.managecurricula.ManageCurriculaRoute
 import dev.fitiavana.learning_mgmt.ui.managecurricula.ManageCurriculaViewModel
 import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.ManagePhasesScreen
 import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.ManagePhasesViewModel
@@ -142,15 +142,17 @@ fun AppNavHost(container: AppContainer) {
         composable(Routes.MANAGE_CURRICULA) {
             val manage: ManageCurriculaViewModel = viewModel(
                 factory = viewModelFactory {
-                    initializer { ManageCurriculaViewModel(container.curriculumRepository, container.progressRepository) }
+                    initializer {
+                        ManageCurriculaViewModel(
+                            container.curriculumRepository,
+                            container.progressRepository,
+                            container.backupRepository,
+                        )
+                    }
                 },
             )
-            val rows by manage.rows.collectAsStateWithLifecycle()
-            ManageCurriculaScreen(
-                rows = rows,
-                onCreate = manage::create,
-                onRename = manage::rename,
-                onDelete = manage::delete,
+            ManageCurriculaRoute(
+                viewModel = manage,
                 onCurriculumClick = { navController.navigate(Routes.managePhases(it)) },
                 onBack = { navController.popBackStack() },
             )

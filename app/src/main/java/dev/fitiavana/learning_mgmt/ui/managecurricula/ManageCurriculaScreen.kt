@@ -1,8 +1,11 @@
 package dev.fitiavana.learning_mgmt.ui.managecurricula
 
+import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,23 +19,32 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import dev.fitiavana.learning_mgmt.R
+import dev.fitiavana.learning_mgmt.features.backup.RestoreResult
 import dev.fitiavana.learning_mgmt.ui.common.ConfirmDialog
 import dev.fitiavana.learning_mgmt.ui.common.EmptyState
 import dev.fitiavana.learning_mgmt.ui.common.NameDialog
+import kotlinx.coroutines.flow.Flow
 
 private sealed interface Dialog {
     data object Create : Dialog
@@ -44,24 +56,44 @@ private sealed interface Dialog {
 @Composable
 fun ManageCurriculaScreen(
     rows: List<CurriculumRow>,
+    busy: Boolean,
+    pendingRestore: PendingRestore?,
+    messages: Flow<BackupMessage>,
     onCreate: (String) -> Unit,
     onRename: (id: String, name: String) -> Unit,
     onDelete: (String) -> Unit,
     onCurriculumClick: (String) -> Unit,
+    onBackup: () -> Unit,
+    onRestore: () -> Unit,
+    onConfirmRestore: () -> Unit,
+    onDismissRestore: () -> Unit,
     onBack: () -> Unit,
 ) {
     var dialog by remember { mutableStateOf<Dialog?>(null) }
+    val snackbar = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    LaunchedEffect(messages) {
+        messages.collect { snackbar.showSnackbar(it.text(context)) }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.manage_curricula)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
-                    }
-                },
-            )
+            Column {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.manage_curricula)) },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
+                        }
+                    },
+                    actions = { BackupMenu(enabled = !busy, onBackup = onBackup, onRestore = onRestore) },
+                )
+                if (busy) {
+                    val working = stringResource(R.string.backup_working)
+                    LinearProgressIndicator(Modifier.fillMaxWidth().semantics { contentDescription = working })
+                }
+            }
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { dialog = Dialog.Create }) {
@@ -116,6 +148,70 @@ fun ManageCurriculaScreen(
             onConfirm = { onDelete(shown.row.id); dialog = null },
             onDismiss = { dialog = null },
         )
+    }
+
+    pendingRestore?.let { pending ->
+        ConfirmDialog(
+            title = stringResource(R.string.backup_restore_title),
+            message = listOf(
+                stringResource(
+                    R.string.backup_restore_file,
+                    countsText(pending.summary.curricula, pending.summary.phases, pending.summary.topics),
+                    pending.summary.exportedAt.substringBefore('T'),
+                ),
+                stringResource(
+                    R.string.backup_restore_current,
+                    countsText(pending.current.curricula, pending.current.phases, pending.current.topics),
+                ),
+                stringResource(R.string.backup_restore_warning),
+            ).joinToString("\n\n"),
+            confirmLabel = stringResource(R.string.action_restore),
+            destructive = true,
+            onConfirm = onConfirmRestore,
+            onDismiss = onDismissRestore,
+        )
+    }
+}
+
+@Composable
+private fun BackupMenu(enabled: Boolean, onBackup: () -> Unit, onRestore: () -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { open = true }) {
+            Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.backup_menu))
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.backup_menu_backup)) },
+                enabled = enabled,
+                onClick = { open = false; onBackup() },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.backup_menu_restore)) },
+                enabled = enabled,
+                onClick = { open = false; onRestore() },
+            )
+        }
+    }
+}
+
+@Composable
+private fun countsText(curricula: Int, phases: Int, topics: Int): String = stringResource(
+    R.string.backup_counts,
+    pluralStringResource(R.plurals.backup_curricula_count, curricula, curricula),
+    pluralStringResource(R.plurals.phase_count, phases, phases),
+    pluralStringResource(R.plurals.backup_topics_count, topics, topics),
+)
+
+private fun BackupMessage.text(context: Context): String = when (this) {
+    BackupMessage.BackupSaved -> context.getString(R.string.backup_saved)
+    BackupMessage.BackupFailed -> context.getString(R.string.backup_failed)
+    BackupMessage.FileUnreadable -> context.getString(R.string.backup_file_unreadable)
+    BackupMessage.RestoreComplete -> context.getString(R.string.backup_restored)
+    is BackupMessage.RestoreRejected -> when (val failure = failure) {
+        is RestoreResult.Error -> context.getString(R.string.backup_restore_rejected, failure.message)
+        is RestoreResult.SchemaMismatch ->
+            context.getString(R.string.backup_version_mismatch, failure.backupVersion, failure.currentVersion)
     }
 }
 
