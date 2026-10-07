@@ -9,6 +9,8 @@
     <string name="action_delete">Delete</string>
     <string name="action_show_more">Show more</string>
     <string name="action_show_less">Show less</string>
+    <string name="action_show_completed_topics">Show completed topics</string>
+    <string name="action_hide_completed_topics">Hide completed topics</string>
     <string name="field_name">Name</string>
     <string name="manage_curricula">Manage curricula</string>
 

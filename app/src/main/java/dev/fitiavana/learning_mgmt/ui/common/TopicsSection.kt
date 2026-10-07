@@ -41,7 +41,8 @@ import dev.fitiavana.learning_mgmt.features.progress.TopicWithProgress
 /**
  * The topics of a phase: overall progress, then each topic with its status and, for quantified
  * topics, a progress bar. With [editable], the next topic can be started, and the one in progress
- * completed (or have its progress updated). Draws nothing when there are no topics.
+ * completed (or have its progress updated). With [collapseCompleted], completed topics are hidden
+ * behind a "Show completed topics" button. Draws nothing when there are no topics.
  */
 @Composable
 fun TopicsSection(
@@ -49,10 +50,14 @@ fun TopicsSection(
     editable: Boolean,
     handlers: TopicHandlers,
     modifier: Modifier = Modifier,
+    collapseCompleted: Boolean = false,
 ) {
     if (topics.isEmpty()) return
     val summary = TopicRules.summary(topics)
     val nextId = TopicRules.nextToStart(topics)?.topic?.id
+    var showCompleted by rememberSaveable { mutableStateOf(false) }
+    val hasCompleted = topics.any { it.status == Status.COMPLETED }
+    val hideCompleted = collapseCompleted && !showCompleted
 
     Column(modifier.fillMaxWidth().padding(top = 24.dp)) {
         Text(stringResource(R.string.topics_section_title), style = MaterialTheme.typography.titleMedium)
@@ -66,7 +71,16 @@ fun TopicsSection(
             progress = { summary.fraction },
             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag("topics-progress"),
         )
-        topics.forEach { topic ->
+        if (collapseCompleted && hasCompleted) {
+            TextButton(onClick = { showCompleted = !showCompleted }) {
+                Text(
+                    stringResource(
+                        if (showCompleted) R.string.action_hide_completed_topics else R.string.action_show_completed_topics,
+                    ),
+                )
+            }
+        }
+        topics.filter { !hideCompleted || it.status != Status.COMPLETED }.forEach { topic ->
             TopicRowItem(
                 topic = topic,
                 canStart = editable && topic.topic.id == nextId,

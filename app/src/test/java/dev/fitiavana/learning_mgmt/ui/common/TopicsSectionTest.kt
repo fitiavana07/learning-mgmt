@@ -32,12 +32,17 @@ class TopicsSectionTest {
     private fun t(number: Int, status: Status, total: Int? = null, done: Int = 0, unit: String? = null) =
         TopicWithProgress(Topic("t$number", "p", number, "Name $number", total, unit), status, done)
 
-    private fun show(topics: List<TopicWithProgress>, editable: Boolean = true) {
+    private fun show(
+        topics: List<TopicWithProgress>,
+        editable: Boolean = true,
+        collapseCompleted: Boolean = false,
+    ) {
         compose.setContent {
             LearningmgmtTheme {
                 TopicsSection(
                     topics = topics,
                     editable = editable,
+                    collapseCompleted = collapseCompleted,
                     handlers = TopicHandlers(
                         onStart = { started += it },
                         onComplete = { completed += it },
@@ -166,6 +171,45 @@ class TopicsSectionTest {
         )
 
         compose.onAllNodesWithContentDescription("Update progress").assertCountEquals(1)
+    }
+
+    @Test
+    fun completedTopicsAreHiddenByDefaultWhenCollapsing() {
+        show(listOf(t(1, Status.COMPLETED), t(2, Status.IN_PROGRESS)), collapseCompleted = true)
+
+        compose.onNodeWithText("Topic 1 · Name 1").assertDoesNotExist()
+        compose.onNodeWithText("Topic 2 · Name 2").assertIsDisplayed()
+        compose.onNodeWithText("Show completed topics").assertIsDisplayed()
+        compose.onNodeWithText("1 of 2 topics completed").assertIsDisplayed()
+    }
+
+    @Test
+    fun completedTopicsCanBeShownInOrderAndHiddenAgain() {
+        show(listOf(t(1, Status.COMPLETED), t(2, Status.IN_PROGRESS)), collapseCompleted = true)
+
+        compose.onNodeWithText("Show completed topics").performClick()
+
+        compose.onNodeWithText("Topic 1 · Name 1").assertIsDisplayed()
+        compose.onNodeWithText("Show completed topics").assertDoesNotExist()
+        compose.onNodeWithText("Hide completed topics").performClick()
+
+        compose.onNodeWithText("Topic 1 · Name 1").assertDoesNotExist()
+        compose.onNodeWithText("Show completed topics").assertIsDisplayed()
+    }
+
+    @Test
+    fun noToggleWithoutCompletedTopics() {
+        show(listOf(t(1, Status.IN_PROGRESS), t(2, Status.NOT_STARTED)), collapseCompleted = true)
+
+        compose.onNodeWithText("Show completed topics").assertDoesNotExist()
+    }
+
+    @Test
+    fun completedTopicsAreShownWhenNotCollapsing() {
+        show(listOf(t(1, Status.COMPLETED), t(2, Status.IN_PROGRESS)))
+
+        compose.onNodeWithText("Topic 1 · Name 1").assertIsDisplayed()
+        compose.onNodeWithText("Show completed topics").assertDoesNotExist()
     }
 
     @Test

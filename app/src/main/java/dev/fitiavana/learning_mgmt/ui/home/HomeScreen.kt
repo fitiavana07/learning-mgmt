@@ -90,7 +90,14 @@ fun HomeScreen(
                 is HomeContent.InProgress -> PhaseContent(
                     content.phase,
                     header = { StatusChip(Status.IN_PROGRESS) },
-                    footer = { TopicsSection(content.topics, editable = true, handlers = topicHandlers) },
+                    footer = {
+                        TopicsSection(
+                            content.topics,
+                            editable = true,
+                            handlers = topicHandlers,
+                            collapseCompleted = true,
+                        )
+                    },
                 )
                 is HomeContent.ReadyToStart -> PhaseContent(
                     content.phase,
