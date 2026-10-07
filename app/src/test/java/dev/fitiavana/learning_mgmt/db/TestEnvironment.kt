@@ -2,6 +2,7 @@ package dev.fitiavana.learning_mgmt.db
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.fitiavana.learning_mgmt.features.backup.BackupRepository
 import dev.fitiavana.learning_mgmt.features.curricula.CurriculumRepository
 import dev.fitiavana.learning_mgmt.features.phases.PhaseRepository
 import dev.fitiavana.learning_mgmt.features.progress.ProgressRepository
@@ -34,6 +35,7 @@ class TestEnvironment : ExternalResource() {
     lateinit var topics: TopicRepository
     lateinit var progress: ProgressRepository
     lateinit var selection: CurriculumSelection
+    lateinit var backup: BackupRepository
 
     override fun before() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -42,10 +44,9 @@ class TestEnvironment : ExternalResource() {
         phases = PhaseRepository(db, db.phaseDao(), sequentialIds("p"))
         topics = TopicRepository(db, db.topicDao(), sequentialIds("t"))
         progress = ProgressRepository(db, db.phaseDao(), db.phaseStatusDao(), db.topicProgressDao())
-        selection = CurriculumSelection(
-            curricula,
-            testSelectionStore(Files.createTempDirectory("selection").toFile(), scope),
-        )
+        val selectionStore = testSelectionStore(Files.createTempDirectory("selection").toFile(), scope)
+        selection = CurriculumSelection(curricula, selectionStore)
+        backup = BackupRepository(db, db.backupDao(), selectionStore, DB_VERSION)
     }
 
     /** Registers a ViewModel so its coroutines are cancelled when the test ends. */

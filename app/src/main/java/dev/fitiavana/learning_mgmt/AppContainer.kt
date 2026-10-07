@@ -5,7 +5,9 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.room.Room
 import dev.fitiavana.learning_mgmt.db.AppDatabase
+import dev.fitiavana.learning_mgmt.db.DB_VERSION
 import dev.fitiavana.learning_mgmt.db.MIGRATION_1_2
+import dev.fitiavana.learning_mgmt.features.backup.BackupRepository
 import dev.fitiavana.learning_mgmt.features.topics.TopicRepository
 import dev.fitiavana.learning_mgmt.features.curricula.CurriculumRepository
 import dev.fitiavana.learning_mgmt.features.phases.PhaseRepository
@@ -39,4 +41,6 @@ class AppContainer(context: Context) {
     )
 
     val curriculumSelection = CurriculumSelection(curriculumRepository, selectedCurriculumStore)
+
+    val backupRepository = BackupRepository(database, database.backupDao(), selectedCurriculumStore, DB_VERSION)
 }
