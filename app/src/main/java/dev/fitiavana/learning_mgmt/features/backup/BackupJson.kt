@@ -1,12 +1,18 @@
 package dev.fitiavana.learning_mgmt.features.backup
 
+import dev.fitiavana.learning_mgmt.features.FormatException
+import dev.fitiavana.learning_mgmt.features.array
 import dev.fitiavana.learning_mgmt.features.curricula.Curriculum
+import dev.fitiavana.learning_mgmt.features.int
+import dev.fitiavana.learning_mgmt.features.optionalInt
+import dev.fitiavana.learning_mgmt.features.optionalString
 import dev.fitiavana.learning_mgmt.features.phases.Phase
 import dev.fitiavana.learning_mgmt.features.progress.PhaseStatus
 import dev.fitiavana.learning_mgmt.features.progress.Status
 import dev.fitiavana.learning_mgmt.features.progress.TopicProgress
+import dev.fitiavana.learning_mgmt.features.rows
+import dev.fitiavana.learning_mgmt.features.string
 import dev.fitiavana.learning_mgmt.features.topics.Topic
-import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -19,8 +25,6 @@ object BackupJson {
         data class Success(val data: BackupData) : DecodeResult
         data class Invalid(val message: String) : DecodeResult
     }
-
-    private class FormatException(message: String) : Exception(message)
 
     fun encode(data: BackupData): String = JSONObject().apply {
         put("schemaVersion", data.schemaVersion)
@@ -89,32 +93,6 @@ object BackupJson {
         },
         topicProgress = root.rows("topicProgress") { TopicProgress(string("topicId"), status(), int("done")) },
     )
-
-    private fun <T> array(items: List<T>, row: JSONObject.(T) -> JSONObject) =
-        JSONArray().apply { items.forEach { put(JSONObject().row(it)) } }
-
-    private fun <T> JSONObject.rows(key: String, row: JSONObject.() -> T): List<T> {
-        val array = value(key) as? JSONArray ?: throw FormatException("'$key' must be a list")
-        return List(array.length()) { i ->
-            val item = array.opt(i) as? JSONObject ?: throw FormatException("'$key' has a row that is not an object")
-            item.row()
-        }
-    }
-
-    private fun JSONObject.value(key: String): Any =
-        if (has(key)) get(key) else throw FormatException("Missing '$key'")
-
-    private fun JSONObject.string(key: String): String =
-        value(key) as? String ?: throw FormatException("'$key' must be a string")
-
-    private fun JSONObject.int(key: String): Int =
-        value(key) as? Int ?: throw FormatException("'$key' must be a whole number")
-
-    private fun JSONObject.optionalString(key: String): String? =
-        if (isNull(key)) null else string(key)
-
-    private fun JSONObject.optionalInt(key: String): Int? =
-        if (isNull(key)) null else int(key)
 
     private fun JSONObject.status(): Status {
         val name = string("status")
