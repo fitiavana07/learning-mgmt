@@ -3,6 +3,7 @@ package dev.fitiavana.learning_mgmt.features.progress
 import dev.fitiavana.learning_mgmt.db.AppDatabase
 import dev.fitiavana.learning_mgmt.db.inMemoryDatabase
 import dev.fitiavana.learning_mgmt.db.sequentialIds
+import dev.fitiavana.learning_mgmt.db.testTracker
 import dev.fitiavana.learning_mgmt.features.curricula.CurriculumRepository
 import dev.fitiavana.learning_mgmt.features.phases.PhaseRepository
 import kotlinx.coroutines.flow.first
@@ -28,9 +29,10 @@ class ProgressRepositoryTest {
     @Before
     fun setUp() = runBlocking {
         db = inMemoryDatabase()
-        curriculumId = CurriculumRepository(db.curriculumDao(), sequentialIds("c")).create("Spanish")
-        phases = PhaseRepository(db, db.phaseDao(), sequentialIds("p"))
-        progress = ProgressRepository(db, db.phaseDao(), db.phaseStatusDao(), db.topicProgressDao())
+        val tracker = testTracker(db)
+        curriculumId = CurriculumRepository(db, db.curriculumDao(), tracker, sequentialIds("c")).create("Spanish")
+        phases = PhaseRepository(db, db.phaseDao(), tracker, sequentialIds("p"))
+        progress = ProgressRepository(db, db.phaseDao(), db.phaseStatusDao(), db.topicProgressDao(), tracker)
         p1 = phases.add(curriculumId, "A", "")
         p2 = phases.add(curriculumId, "B", "")
         p3 = phases.add(curriculumId, "C", "")
@@ -55,8 +57,8 @@ class ProgressRepositoryTest {
 
     @Test
     fun observeAllGroupsPhasesByCurriculumInOrder() = runBlocking {
-        val piano = CurriculumRepository(db.curriculumDao(), sequentialIds("o")).create("Piano")
-        PhaseRepository(db, db.phaseDao(), sequentialIds("q")).add(piano, "Scales", "")
+        val piano = CurriculumRepository(db, db.curriculumDao(), testTracker(db), sequentialIds("o")).create("Piano")
+        PhaseRepository(db, db.phaseDao(), testTracker(db), sequentialIds("q")).add(piano, "Scales", "")
         progress.start(p1)
 
         val all = progress.observeAll().first()
@@ -152,7 +154,7 @@ class ProgressRepositoryTest {
     fun deletingTheCurriculumDeletesItsStatusRows() = runBlocking {
         progress.start(p1)
 
-        CurriculumRepository(db.curriculumDao(), sequentialIds("c")).delete(curriculumId)
+        CurriculumRepository(db, db.curriculumDao(), testTracker(db), sequentialIds("c")).delete(curriculumId)
 
         assertEquals(0, statusRowCount())
     }

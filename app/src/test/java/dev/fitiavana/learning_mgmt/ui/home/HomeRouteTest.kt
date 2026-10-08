@@ -9,6 +9,7 @@ import androidx.compose.ui.test.performClick
 import dev.fitiavana.learning_mgmt.db.AppDatabase
 import dev.fitiavana.learning_mgmt.db.inMemoryDatabase
 import dev.fitiavana.learning_mgmt.db.sequentialIds
+import dev.fitiavana.learning_mgmt.db.testTracker
 import dev.fitiavana.learning_mgmt.features.curricula.CurriculumRepository
 import dev.fitiavana.learning_mgmt.features.phases.PhaseRepository
 import dev.fitiavana.learning_mgmt.features.progress.ProgressRepository
@@ -48,9 +49,10 @@ class HomeRouteTest {
     @Before
     fun setUp() = runBlocking {
         db = inMemoryDatabase()
-        val curricula = CurriculumRepository(db.curriculumDao(), sequentialIds("c"))
-        val phases = PhaseRepository(db, db.phaseDao(), sequentialIds("p"))
-        val progress = ProgressRepository(db, db.phaseDao(), db.phaseStatusDao(), db.topicProgressDao())
+        val tracker = testTracker(db)
+        val curricula = CurriculumRepository(db, db.curriculumDao(), tracker, sequentialIds("c"))
+        val phases = PhaseRepository(db, db.phaseDao(), tracker, sequentialIds("p"))
+        val progress = ProgressRepository(db, db.phaseDao(), db.phaseStatusDao(), db.topicProgressDao(), tracker)
         val spanish = curricula.create("Spanish")
         phases.add(spanish, "Basics", "")
         progress.start("p1")

@@ -2,6 +2,12 @@ package dev.fitiavana.learning_mgmt.features.backup
 
 import dev.fitiavana.learning_mgmt.db.AppDatabase
 import dev.fitiavana.learning_mgmt.db.inMemoryDatabase
+import dev.fitiavana.learning_mgmt.db.testTracker
+import dev.fitiavana.learning_mgmt.features.sync.Meta
+import dev.fitiavana.learning_mgmt.features.sync.RecordKey
+import dev.fitiavana.learning_mgmt.features.sync.Stamp
+import dev.fitiavana.learning_mgmt.features.sync.SyncKind
+import dev.fitiavana.learning_mgmt.features.sync.SyncMetaRow
 import dev.fitiavana.learning_mgmt.features.curricula.Curriculum
 import dev.fitiavana.learning_mgmt.features.phases.Phase
 import dev.fitiavana.learning_mgmt.features.progress.PhaseStatus
@@ -57,7 +63,7 @@ class BackupRepositoryTest {
     )
 
     private fun repository(db: AppDatabase, store: SelectedCurriculumStore, version: Int = VERSION) =
-        BackupRepository(db, db.backupDao(), store, version, clock)
+        BackupRepository(db, db.backupDao(), testTracker(db), store, version, clock)
 
     @Before
     fun setUp() = runBlocking {
@@ -98,6 +104,50 @@ class BackupRepositoryTest {
         assertEquals(VERSION, data.schemaVersion)
         assertEquals("2026-10-07T10:00:00Z", data.exportedAt)
         assertEquals("c1", data.selectedCurriculumId)
+    }
+
+    private suspend fun metaOf(db: AppDatabase) = db.syncMetaDao().all().associate { it.key() to it.meta() }
+
+    @Test
+    fun restoreStampsEveryRestoredRowAsAFreshLocalWrite() = runBlocking {
+        targetDb.syncMetaDao().upsert(
+            listOf(SyncMetaRow.of(RecordKey(SyncKind.CURRICULUM, "c1"), Meta(Stamp(10, "other"), deleted = false))),
+        )
+
+        restoreFromSource()
+
+        val meta = metaOf(targetDb)
+        assertEquals(11, meta.size)
+        assertTrue(meta.values.none { it.deleted })
+        assertTrue(meta.getValue(RecordKey(SyncKind.CURRICULUM, "c1")).stamp > Stamp(10, "other"))
+        assertEquals("test", meta.getValue(RecordKey(SyncKind.TOPIC_PROGRESS, "t2")).stamp.deviceId)
+    }
+
+    @Test
+    fun restoreTombstonesWhatItReplaced() = runBlocking {
+        targetDb.backupDao().insertCurricula(listOf(Curriculum("old", "Old", 1)))
+        targetDb.syncMetaDao().upsert(
+            listOf(
+                SyncMetaRow.of(RecordKey(SyncKind.CURRICULUM, "old"), Meta(Stamp(10, "other"), deleted = false)),
+                SyncMetaRow.of(RecordKey(SyncKind.PHASE, "already-gone"), Meta(Stamp(11, "other"), deleted = true)),
+            ),
+        )
+
+        restoreFromSource()
+
+        val meta = metaOf(targetDb)
+        assertTrue(meta.getValue(RecordKey(SyncKind.CURRICULUM, "old")).deleted)
+        assertTrue(meta.getValue(RecordKey(SyncKind.CURRICULUM, "old")).stamp > Stamp(10, "other"))
+        assertEquals(Stamp(11, "other"), meta.getValue(RecordKey(SyncKind.PHASE, "already-gone")).stamp)
+    }
+
+    @Test
+    fun aRejectedFileLeavesTheStampsAlone() = runBlocking {
+        val before = metaOf(targetDb)
+
+        target.restore("not json")
+
+        assertEquals(before, metaOf(targetDb))
     }
 
     @Test

@@ -3,6 +3,7 @@ package dev.fitiavana.learning_mgmt.features.phases
 import dev.fitiavana.learning_mgmt.db.AppDatabase
 import dev.fitiavana.learning_mgmt.db.inMemoryDatabase
 import dev.fitiavana.learning_mgmt.db.sequentialIds
+import dev.fitiavana.learning_mgmt.db.testTracker
 import dev.fitiavana.learning_mgmt.features.curricula.CurriculumRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -23,8 +24,9 @@ class PhaseRepositoryTest {
     @Before
     fun setUp() = runBlocking {
         db = inMemoryDatabase()
-        curriculumId = CurriculumRepository(db.curriculumDao(), sequentialIds("c")).create("Spanish")
-        phases = PhaseRepository(db, db.phaseDao(), sequentialIds("p"))
+        val tracker = testTracker(db)
+        curriculumId = CurriculumRepository(db, db.curriculumDao(), tracker, sequentialIds("c")).create("Spanish")
+        phases = PhaseRepository(db, db.phaseDao(), tracker, sequentialIds("p"))
     }
 
     @After
@@ -82,7 +84,7 @@ class PhaseRepositoryTest {
 
     @Test
     fun phasesOfOtherCurriculaAreUntouched() = runBlocking {
-        val other = CurriculumRepository(db.curriculumDao(), sequentialIds("other")).create("Piano")
+        val other = CurriculumRepository(db, db.curriculumDao(), testTracker(db), sequentialIds("other")).create("Piano")
         phases.add(curriculumId, "A", "")
         phases.add(other, "X", "")
         phases.add(other, "Y", "")
@@ -103,7 +105,7 @@ class PhaseRepositoryTest {
     fun deletingTheCurriculumDeletesItsPhases() = runBlocking {
         phases.add(curriculumId, "A", "")
 
-        CurriculumRepository(db.curriculumDao(), sequentialIds("c")).delete(curriculumId)
+        CurriculumRepository(db, db.curriculumDao(), testTracker(db), sequentialIds("c")).delete(curriculumId)
 
         assertEquals(emptyList<Phase>(), phases.observe(curriculumId).first())
     }

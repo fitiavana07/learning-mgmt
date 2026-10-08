@@ -17,7 +17,7 @@ interface CurriculumDao {
     suspend fun insert(curriculum: Curriculum)
 
     @Query("UPDATE curriculum SET name = :name WHERE id = :id")
-    suspend fun rename(id: String, name: String)
+    suspend fun rename(id: String, name: String): Int
 
     @Query("DELETE FROM curriculum WHERE id = :id")
     suspend fun delete(id: String)

@@ -3,6 +3,7 @@ package dev.fitiavana.learning_mgmt.features.progress
 import dev.fitiavana.learning_mgmt.db.AppDatabase
 import dev.fitiavana.learning_mgmt.db.inMemoryDatabase
 import dev.fitiavana.learning_mgmt.db.sequentialIds
+import dev.fitiavana.learning_mgmt.db.testTracker
 import dev.fitiavana.learning_mgmt.features.curricula.CurriculumRepository
 import dev.fitiavana.learning_mgmt.features.phases.PhaseRepository
 import dev.fitiavana.learning_mgmt.features.topics.TopicRepository
@@ -30,10 +31,11 @@ class TopicProgressRepositoryTest {
     @Before
     fun setUp() = runBlocking {
         db = inMemoryDatabase()
-        val curriculumId = CurriculumRepository(db.curriculumDao(), sequentialIds("c")).create("Spanish")
-        val phases = PhaseRepository(db, db.phaseDao(), sequentialIds("p"))
-        topics = TopicRepository(db, db.topicDao(), sequentialIds("t"))
-        progress = ProgressRepository(db, db.phaseDao(), db.phaseStatusDao(), db.topicProgressDao())
+        val tracker = testTracker(db)
+        val curriculumId = CurriculumRepository(db, db.curriculumDao(), tracker, sequentialIds("c")).create("Spanish")
+        val phases = PhaseRepository(db, db.phaseDao(), tracker, sequentialIds("p"))
+        topics = TopicRepository(db, db.topicDao(), tracker, sequentialIds("t"))
+        progress = ProgressRepository(db, db.phaseDao(), db.phaseStatusDao(), db.topicProgressDao(), tracker)
         phase = phases.add(curriculumId, "Basics", "")
         otherPhase = phases.add(curriculumId, "Verbs", "")
         simple = topics.add(phase, "Greetings")

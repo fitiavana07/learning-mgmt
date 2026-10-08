@@ -17,7 +17,11 @@ import dev.fitiavana.learning_mgmt.features.selection.CurriculumSelection
 import dev.fitiavana.learning_mgmt.features.selection.SelectedCurriculumStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import dev.fitiavana.learning_mgmt.features.sync.ChangeTracker
+import dev.fitiavana.learning_mgmt.features.sync.StampClock
+import dev.fitiavana.learning_mgmt.features.sync.SyncSettingsStore
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.runBlocking
 
 /** Manual dependency wiring: one instance of everything, created once by the Application. */
 class AppContainer(context: Context) {
@@ -25,23 +29,43 @@ class AppContainer(context: Context) {
         .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
         .build()
 
-    val curriculumRepository = CurriculumRepository(database.curriculumDao())
-    val phaseRepository = PhaseRepository(database, database.phaseDao())
-    val topicRepository = TopicRepository(database, database.topicDao())
+    private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    val syncSettings = SyncSettingsStore(
+        PreferenceDataStoreFactory.create(scope = ioScope) { context.preferencesDataStoreFile("sync") },
+    )
+
+    // Every local write is stamped with this device's id, which is needed from the first write on.
+    // It is one read of a tiny preferences file, generated on the very first launch only.
+    private val changeTracker = ChangeTracker(
+        database.syncMetaDao(),
+        StampClock(runBlocking { syncSettings.deviceId() }, System::currentTimeMillis),
+    )
+
+    val curriculumRepository = CurriculumRepository(database, database.curriculumDao(), changeTracker)
+    val phaseRepository = PhaseRepository(database, database.phaseDao(), changeTracker)
+    val topicRepository = TopicRepository(database, database.topicDao(), changeTracker)
     val progressRepository = ProgressRepository(
         database,
         database.phaseDao(),
         database.phaseStatusDao(),
         database.topicProgressDao(),
+        changeTracker,
     )
 
     private val selectedCurriculumStore = SelectedCurriculumStore(
-        PreferenceDataStoreFactory.create(scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)) {
+        PreferenceDataStoreFactory.create(scope = ioScope) {
             context.preferencesDataStoreFile("selection")
         },
     )
 
     val curriculumSelection = CurriculumSelection(curriculumRepository, selectedCurriculumStore)
 
-    val backupRepository = BackupRepository(database, database.backupDao(), selectedCurriculumStore, DB_VERSION)
+    val backupRepository = BackupRepository(
+        database,
+        database.backupDao(),
+        changeTracker,
+        selectedCurriculumStore,
+        DB_VERSION,
+    )
 }

@@ -3,6 +3,7 @@ package dev.fitiavana.learning_mgmt.features.topics
 import dev.fitiavana.learning_mgmt.db.AppDatabase
 import dev.fitiavana.learning_mgmt.db.inMemoryDatabase
 import dev.fitiavana.learning_mgmt.db.sequentialIds
+import dev.fitiavana.learning_mgmt.db.testTracker
 import dev.fitiavana.learning_mgmt.features.curricula.CurriculumRepository
 import dev.fitiavana.learning_mgmt.features.phases.PhaseRepository
 import kotlinx.coroutines.flow.first
@@ -26,10 +27,11 @@ class TopicRepositoryTest {
     @Before
     fun setUp() = runBlocking {
         db = inMemoryDatabase()
-        curriculumId = CurriculumRepository(db.curriculumDao(), sequentialIds("c")).create("Spanish")
-        phases = PhaseRepository(db, db.phaseDao(), sequentialIds("p"))
+        val tracker = testTracker(db)
+        curriculumId = CurriculumRepository(db, db.curriculumDao(), tracker, sequentialIds("c")).create("Spanish")
+        phases = PhaseRepository(db, db.phaseDao(), tracker, sequentialIds("p"))
         phaseId = phases.add(curriculumId, "Basics", "")
-        topics = TopicRepository(db, db.topicDao(), sequentialIds("t"))
+        topics = TopicRepository(db, db.topicDao(), tracker, sequentialIds("t"))
     }
 
     @After

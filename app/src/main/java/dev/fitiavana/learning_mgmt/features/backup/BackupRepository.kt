@@ -4,6 +4,7 @@ import androidx.room.RoomDatabase
 import androidx.room.withTransaction
 import dev.fitiavana.learning_mgmt.features.selection.LaunchSelection
 import dev.fitiavana.learning_mgmt.features.selection.SelectedCurriculumStore
+import dev.fitiavana.learning_mgmt.features.sync.ChangeTracker
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import java.time.Clock
@@ -48,6 +49,7 @@ sealed interface Inspection {
 class BackupRepository(
     private val db: RoomDatabase,
     private val dao: BackupDao,
+    private val tracker: ChangeTracker,
     private val selectionStore: SelectedCurriculumStore,
     private val schemaVersion: Int,
     private val clock: Clock = Clock.systemUTC(),
@@ -97,6 +99,9 @@ class BackupRepository(
                 dao.insertTopics(data.topics)
                 dao.insertPhaseStatuses(data.phaseStatuses)
                 dao.insertTopicProgress(data.topicProgress)
+                // Whatever the restore replaced is deleted for the peers too, and what it restored
+                // is a fresh write: with its old stamps it would be reverted by the next sync.
+                tracker.replaceAll(data.recordKeys())
             }
             selectionStore.select(LaunchSelection.resolve(data.selectedCurriculumId, data.curricula.map { it.id }))
             RestoreResult.Success

@@ -40,4 +40,21 @@ interface SyncMetaDao {
 
     @Query("SELECT COALESCE(MAX(stampTime), 0) FROM sync_meta")
     suspend fun highestTime(): Long
+
+    // What a deletion takes with it through the foreign key cascades, read before the delete.
+
+    @Query("SELECT id FROM phase WHERE curriculumId = :curriculumId")
+    suspend fun phaseIdsOfCurriculum(curriculumId: String): List<String>
+
+    @Query("SELECT topic.id FROM topic JOIN phase ON phase.id = topic.phaseId WHERE phase.curriculumId = :curriculumId")
+    suspend fun topicIdsOfCurriculum(curriculumId: String): List<String>
+
+    @Query("SELECT id FROM topic WHERE phaseId = :phaseId")
+    suspend fun topicIdsOfPhase(phaseId: String): List<String>
+
+    @Query("SELECT phaseId FROM phase_status WHERE phaseId IN (:phaseIds)")
+    suspend fun phaseStatusIds(phaseIds: List<String>): List<String>
+
+    @Query("SELECT topicId FROM topic_progress WHERE topicId IN (:topicIds)")
+    suspend fun topicProgressIds(topicIds: List<String>): List<String>
 }

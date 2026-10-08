@@ -4,12 +4,15 @@ import androidx.room.RoomDatabase
 import androidx.room.withTransaction
 import dev.fitiavana.learning_mgmt.db.IdGenerator
 import dev.fitiavana.learning_mgmt.db.UuidGenerator
+import dev.fitiavana.learning_mgmt.features.sync.ChangeTracker
+import dev.fitiavana.learning_mgmt.features.sync.SyncKind
 import kotlinx.coroutines.flow.Flow
 
 /** Structure edits only. Nothing here reads or writes progress. */
 class TopicRepository(
     private val db: RoomDatabase,
     private val dao: TopicDao,
+    private val tracker: ChangeTracker,
     private val newId: IdGenerator = UuidGenerator,
 ) {
     fun observe(phaseId: String): Flow<List<Topic>> = dao.observeByPhase(phaseId)
@@ -20,15 +23,23 @@ class TopicRepository(
             val id = newId()
             val number = TopicOrdering.nextNumber(dao.getByPhase(phaseId))
             dao.insert(Topic(id, phaseId, number, validName(name), validTotal(total), validUnit(total, unit)))
+            tracker.touch(SyncKind.TOPIC, id)
             id
         }
 
-    suspend fun update(id: String, name: String, total: Int?, unit: String?) =
-        dao.updateDetails(id, validName(name), validTotal(total), validUnit(total, unit))
+    suspend fun update(id: String, name: String, total: Int?, unit: String?) {
+        val validName = validName(name)
+        val validTotal = validTotal(total)
+        val validUnit = validUnit(total, unit)
+        db.withTransaction {
+            if (dao.updateDetails(id, validName, validTotal, validUnit) > 0) tracker.touch(SyncKind.TOPIC, id)
+        }
+    }
 
     suspend fun delete(id: String) {
         db.withTransaction {
             val topic = dao.get(id) ?: return@withTransaction
+            tracker.deletedTopic(id)
             dao.delete(id)
             saveRenumbered(dao.getByPhase(topic.phaseId), TopicOrdering::renumber)
         }
@@ -44,6 +55,7 @@ class TopicRepository(
     private suspend fun saveRenumbered(current: List<Topic>, reorder: (List<Topic>) -> List<Topic>) {
         val changed = reorder(current).filter { it !in current }
         dao.updateAll(changed)
+        tracker.touch(SyncKind.TOPIC, changed.map { it.id })
     }
 
     private fun validName(name: String): String =

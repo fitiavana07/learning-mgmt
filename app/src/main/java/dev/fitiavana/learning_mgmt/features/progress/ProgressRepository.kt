@@ -3,6 +3,8 @@ package dev.fitiavana.learning_mgmt.features.progress
 import androidx.room.RoomDatabase
 import androidx.room.withTransaction
 import dev.fitiavana.learning_mgmt.features.phases.PhaseDao
+import dev.fitiavana.learning_mgmt.features.sync.ChangeTracker
+import dev.fitiavana.learning_mgmt.features.sync.SyncKind
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -12,6 +14,7 @@ class ProgressRepository(
     private val phaseDao: PhaseDao,
     private val statusDao: PhaseStatusDao,
     private val topicProgressDao: TopicProgressDao,
+    private val tracker: ChangeTracker,
 ) {
     fun observe(curriculumId: String): Flow<List<PhaseWithStatus>> =
         statusDao.observeRowsByCurriculum(curriculumId).map { rows -> rows.map { it.toPhaseWithStatus() } }
@@ -60,6 +63,7 @@ class ProgressRepository(
             val topics = TopicRules.summary(topicProgressDao.getRowsByPhase(phaseId).map { it.toTopicWithProgress() })
             check(allowed(phases, target, topics)) { "Phase ${target.phase.number} cannot $verb now" }
             statusDao.upsert(PhaseStatus(phaseId, to))
+            tracker.touch(SyncKind.PHASE_STATUS, phaseId)
         }
     }
 
@@ -76,6 +80,7 @@ class ProgressRepository(
             val target = topics.first { it.topic.id == topicId }
             val updated = checkNotNull(next(topics, target)) { "Topic ${target.topic.number} cannot $verb now" }
             topicProgressDao.upsert(TopicProgress(topicId, updated.status, updated.done))
+            tracker.touch(SyncKind.TOPIC_PROGRESS, topicId)
         }
     }
 }

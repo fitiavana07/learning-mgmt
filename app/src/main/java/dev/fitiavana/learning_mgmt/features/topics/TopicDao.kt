@@ -24,7 +24,7 @@ interface TopicDao {
     suspend fun updateAll(topics: List<Topic>)
 
     @Query("UPDATE topic SET name = :name, total = :total, unit = :unit WHERE id = :id")
-    suspend fun updateDetails(id: String, name: String, total: Int?, unit: String?)
+    suspend fun updateDetails(id: String, name: String, total: Int?, unit: String?): Int
 
     @Query("DELETE FROM topic WHERE id = :id")
     suspend fun delete(id: String)

@@ -3,6 +3,7 @@ package dev.fitiavana.learning_mgmt.features.selection
 import dev.fitiavana.learning_mgmt.db.AppDatabase
 import dev.fitiavana.learning_mgmt.db.inMemoryDatabase
 import dev.fitiavana.learning_mgmt.db.sequentialIds
+import dev.fitiavana.learning_mgmt.db.testTracker
 import dev.fitiavana.learning_mgmt.features.curricula.Curriculum
 import dev.fitiavana.learning_mgmt.features.curricula.CurriculumRepository
 import kotlinx.coroutines.CoroutineScope
@@ -35,7 +36,7 @@ class CurriculumSelectionTest {
     @Before
     fun setUp() {
         db = inMemoryDatabase()
-        curricula = CurriculumRepository(db.curriculumDao(), sequentialIds("c"))
+        curricula = CurriculumRepository(db, db.curriculumDao(), testTracker(db), sequentialIds("c"))
         selection = CurriculumSelection(curricula, testSelectionStore(folder.root, scope))
     }
 

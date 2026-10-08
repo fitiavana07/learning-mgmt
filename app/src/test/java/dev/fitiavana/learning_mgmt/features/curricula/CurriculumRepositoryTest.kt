@@ -3,6 +3,7 @@ package dev.fitiavana.learning_mgmt.features.curricula
 import dev.fitiavana.learning_mgmt.db.AppDatabase
 import dev.fitiavana.learning_mgmt.db.inMemoryDatabase
 import dev.fitiavana.learning_mgmt.db.sequentialIds
+import dev.fitiavana.learning_mgmt.db.testTracker
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -21,7 +22,7 @@ class CurriculumRepositoryTest {
     @Before
     fun setUp() {
         db = inMemoryDatabase()
-        repository = CurriculumRepository(db.curriculumDao(), sequentialIds("c"))
+        repository = CurriculumRepository(db, db.curriculumDao(), testTracker(db), sequentialIds("c"))
     }
 
     @After
