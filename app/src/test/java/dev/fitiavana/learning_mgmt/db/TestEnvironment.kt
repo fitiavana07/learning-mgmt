@@ -9,6 +9,7 @@ import dev.fitiavana.learning_mgmt.features.progress.ProgressRepository
 import dev.fitiavana.learning_mgmt.features.selection.CurriculumSelection
 import dev.fitiavana.learning_mgmt.features.selection.testSelectionStore
 import dev.fitiavana.learning_mgmt.features.sync.ChangeTracker
+import dev.fitiavana.learning_mgmt.features.sync.SyncRepository
 import dev.fitiavana.learning_mgmt.features.topics.TopicRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +27,11 @@ import java.nio.file.Files
  * main dispatcher so ViewModels run eagerly. Ids are predictable: c1, c2... / p1, p2...
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class TestEnvironment : ExternalResource() {
+class TestEnvironment(
+    private val deviceId: String = "test",
+    /** Prefix of the generated ids, so two environments acting as two devices never reuse an id. */
+    private val idPrefix: String = "",
+) : ExternalResource() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val viewModels = mutableListOf<ViewModel>()
 
@@ -41,18 +46,20 @@ class TestEnvironment : ExternalResource() {
     lateinit var progress: ProgressRepository
     lateinit var selection: CurriculumSelection
     lateinit var backup: BackupRepository
+    lateinit var sync: SyncRepository
 
     override fun before() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         db = inMemoryDatabase()
-        tracker = testTracker(db) { now }
-        curricula = CurriculumRepository(db, db.curriculumDao(), tracker, sequentialIds("c"))
-        phases = PhaseRepository(db, db.phaseDao(), tracker, sequentialIds("p"))
-        topics = TopicRepository(db, db.topicDao(), tracker, sequentialIds("t"))
+        tracker = testTracker(db, deviceId) { now }
+        curricula = CurriculumRepository(db, db.curriculumDao(), tracker, sequentialIds("${idPrefix}c"))
+        phases = PhaseRepository(db, db.phaseDao(), tracker, sequentialIds("${idPrefix}p"))
+        topics = TopicRepository(db, db.topicDao(), tracker, sequentialIds("${idPrefix}t"))
         progress = ProgressRepository(db, db.phaseDao(), db.phaseStatusDao(), db.topicProgressDao(), tracker)
         val selectionStore = testSelectionStore(Files.createTempDirectory("selection").toFile(), scope)
         selection = CurriculumSelection(curricula, selectionStore)
         backup = BackupRepository(db, db.backupDao(), tracker, selectionStore, DB_VERSION)
+        sync = SyncRepository(db, db.backupDao(), db.syncDao(), db.syncMetaDao(), tracker, DB_VERSION)
     }
 
     /** Registers a ViewModel so its coroutines are cancelled when the test ends. */

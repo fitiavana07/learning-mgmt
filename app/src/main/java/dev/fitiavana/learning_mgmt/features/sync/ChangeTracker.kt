@@ -19,6 +19,9 @@ class ChangeTracker(
     /** Emits after every local write, so auto-sync can push it shortly after. */
     val changes: Flow<Unit> = announced
 
+    /** Makes later stamps come after [time], the highest stamp seen on another device. */
+    fun observe(time: Long) = clock.observe(Stamp(time, ""))
+
     suspend fun touch(kind: SyncKind, id: String) = touch(kind, listOf(id))
 
     suspend fun touch(kind: SyncKind, ids: Collection<String>) = write(ids.map { RecordKey(kind, it) }, deleted = false)

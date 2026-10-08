@@ -11,6 +11,7 @@ import dev.fitiavana.learning_mgmt.features.progress.PhaseStatus
 import dev.fitiavana.learning_mgmt.features.progress.PhaseStatusDao
 import dev.fitiavana.learning_mgmt.features.progress.TopicProgress
 import dev.fitiavana.learning_mgmt.features.progress.TopicProgressDao
+import dev.fitiavana.learning_mgmt.features.sync.SyncDao
 import dev.fitiavana.learning_mgmt.features.sync.SyncMetaDao
 import dev.fitiavana.learning_mgmt.features.sync.SyncMetaRow
 import dev.fitiavana.learning_mgmt.features.topics.Topic
@@ -35,4 +36,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun topicProgressDao(): TopicProgressDao
     abstract fun backupDao(): BackupDao
     abstract fun syncMetaDao(): SyncMetaDao
+    abstract fun syncDao(): SyncDao
 }
