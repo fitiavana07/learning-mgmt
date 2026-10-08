@@ -8,10 +8,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PhaseDao {
-    @Query("SELECT * FROM phase WHERE curriculumId = :curriculumId ORDER BY number")
+    @Query("SELECT * FROM phase WHERE curriculumId = :curriculumId ORDER BY number, id")
     fun observeByCurriculum(curriculumId: String): Flow<List<Phase>>
 
-    @Query("SELECT * FROM phase WHERE curriculumId = :curriculumId ORDER BY number")
+    @Query("SELECT * FROM phase WHERE curriculumId = :curriculumId ORDER BY number, id")
     suspend fun getByCurriculum(curriculumId: String): List<Phase>
 
     @Query("SELECT * FROM phase WHERE id = :id")

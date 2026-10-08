@@ -37,7 +37,7 @@ class CurriculumRepositoryTest {
         val id = repository.create("Spanish A2")
 
         assertEquals("c1", id)
-        assertEquals(listOf(Curriculum("c1", "Spanish A2")), repository.observeAll().first())
+        assertEquals(listOf(Curriculum("c1", "Spanish A2", 1)), repository.observeAll().first())
     }
 
     @Test
@@ -46,6 +46,19 @@ class CurriculumRepositoryTest {
         repository.create("Arabic")
 
         assertEquals(listOf("Zulu", "Arabic"), repository.observeAll().first().map { it.name })
+        assertEquals(listOf(1, 2), repository.observeAll().first().map { it.number })
+    }
+
+    @Test
+    fun aNewCurriculumGoesAfterTheHighestNumberEvenWhenThereAreGaps() = runBlocking {
+        repository.create("A")
+        val dropped = repository.create("B")
+        repository.create("C")
+        repository.delete(dropped)
+
+        repository.create("D")
+
+        assertEquals(listOf("A" to 1, "C" to 3, "D" to 4), repository.observeAll().first().map { it.name to it.number })
     }
 
     @Test
@@ -54,7 +67,7 @@ class CurriculumRepositoryTest {
 
         repository.rename(id, "Spanish A2")
 
-        assertEquals(listOf(Curriculum(id, "Spanish A2")), repository.observeAll().first())
+        assertEquals(listOf(Curriculum(id, "Spanish A2", 1)), repository.observeAll().first())
     }
 
     @Test

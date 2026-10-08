@@ -7,4 +7,6 @@ import androidx.room.PrimaryKey
 data class Curriculum(
     @PrimaryKey val id: String,
     val name: String,
+    /** Position in the list, ties (after a sync) broken by [id]. Gaps are allowed. */
+    val number: Int = 0,
 )

@@ -11,15 +11,20 @@ import dev.fitiavana.learning_mgmt.features.progress.PhaseStatus
 import dev.fitiavana.learning_mgmt.features.progress.PhaseStatusDao
 import dev.fitiavana.learning_mgmt.features.progress.TopicProgress
 import dev.fitiavana.learning_mgmt.features.progress.TopicProgressDao
+import dev.fitiavana.learning_mgmt.features.sync.SyncMetaDao
+import dev.fitiavana.learning_mgmt.features.sync.SyncMetaRow
 import dev.fitiavana.learning_mgmt.features.topics.Topic
 import dev.fitiavana.learning_mgmt.features.topics.TopicDao
 
 /** Bump on any entity change, together with a migration (see `Migrations.kt`). Also stamped on backups. */
-const val DB_VERSION = 2
+const val DB_VERSION = 3
 
 /** Registers the entities and DAOs; each feature package owns its own @Entity and DAO. */
 @Database(
-    entities = [Curriculum::class, Phase::class, PhaseStatus::class, Topic::class, TopicProgress::class],
+    entities = [
+        Curriculum::class, Phase::class, PhaseStatus::class, Topic::class, TopicProgress::class,
+        SyncMetaRow::class,
+    ],
     version = DB_VERSION,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -29,4 +34,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun topicDao(): TopicDao
     abstract fun topicProgressDao(): TopicProgressDao
     abstract fun backupDao(): BackupDao
+    abstract fun syncMetaDao(): SyncMetaDao
 }

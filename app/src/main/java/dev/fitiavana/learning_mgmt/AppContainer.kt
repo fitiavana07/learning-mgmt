@@ -7,6 +7,7 @@ import androidx.room.Room
 import dev.fitiavana.learning_mgmt.db.AppDatabase
 import dev.fitiavana.learning_mgmt.db.DB_VERSION
 import dev.fitiavana.learning_mgmt.db.MIGRATION_1_2
+import dev.fitiavana.learning_mgmt.db.MIGRATION_2_3
 import dev.fitiavana.learning_mgmt.features.backup.BackupRepository
 import dev.fitiavana.learning_mgmt.features.topics.TopicRepository
 import dev.fitiavana.learning_mgmt.features.curricula.CurriculumRepository
@@ -21,7 +22,7 @@ import kotlinx.coroutines.SupervisorJob
 /** Manual dependency wiring: one instance of everything, created once by the Application. */
 class AppContainer(context: Context) {
     private val database = Room.databaseBuilder(context, AppDatabase::class.java, "learning-mgmt.db")
-        .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
         .build()
 
     val curriculumRepository = CurriculumRepository(database.curriculumDao())

@@ -23,6 +23,26 @@ class PhaseOrderingTest {
     }
 
     @Test
+    fun nextNumberIsOnePastTheHighestEvenWithGapsOrDuplicates() {
+        assertEquals(6, PhaseOrdering.nextNumber(listOf(phase("a", 1), phase("b", 5))))
+        assertEquals(3, PhaseOrdering.nextNumber(listOf(phase("a", 2), phase("b", 2))))
+    }
+
+    @Test
+    fun renumberBreaksTiesById() {
+        val result = PhaseOrdering.renumber(listOf(phase("b", 1), phase("a", 1), phase("c", 1)))
+
+        assertEquals(listOf(1 to "a", 2 to "b", 3 to "c"), result.idsByNumber())
+    }
+
+    @Test
+    fun moveUsesTheSameOrderAsTheListsShown() {
+        val result = PhaseOrdering.move(listOf(phase("b", 1), phase("a", 1), phase("c", 2)), from = 0, to = 2)
+
+        assertEquals(listOf(1 to "b", 2 to "c", 3 to "a"), result.idsByNumber().sortedBy { it.first })
+    }
+
+    @Test
     fun removeDropsThePhaseAndRenumbersTheRest() {
         val result = PhaseOrdering.remove(listOf(phase("a", 1), phase("b", 2), phase("c", 3)), "a")
 

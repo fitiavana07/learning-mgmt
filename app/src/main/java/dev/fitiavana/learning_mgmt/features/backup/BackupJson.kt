@@ -26,7 +26,9 @@ object BackupJson {
         put("schemaVersion", data.schemaVersion)
         put("exportedAt", data.exportedAt)
         put("selectedCurriculumId", data.selectedCurriculumId)
-        put("curricula", array(data.curricula) { put("id", it.id).put("name", it.name) })
+        put("curricula", array(data.curricula) {
+            put("id", it.id).put("name", it.name).put("number", it.number)
+        })
         put("phases", array(data.phases) {
             put("id", it.id)
                 .put("curriculumId", it.curriculumId)
@@ -74,7 +76,7 @@ object BackupJson {
         schemaVersion = root.int("schemaVersion"),
         exportedAt = root.string("exportedAt"),
         selectedCurriculumId = root.optionalString("selectedCurriculumId"),
-        curricula = root.rows("curricula") { Curriculum(string("id"), string("name")) },
+        curricula = root.rows("curricula") { Curriculum(string("id"), string("name"), int("number")) },
         phases = root.rows("phases") {
             Phase(string("id"), string("curriculumId"), int("number"), string("name"), string("description"))
         },

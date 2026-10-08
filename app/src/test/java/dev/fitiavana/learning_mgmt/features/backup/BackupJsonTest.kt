@@ -19,7 +19,7 @@ class BackupJsonTest {
         schemaVersion = 2,
         exportedAt = "2026-10-07T10:00:00Z",
         selectedCurriculumId = "c2",
-        curricula = listOf(Curriculum("c2", "Spanish"), Curriculum("c1", "Math")),
+        curricula = listOf(Curriculum("c2", "Spanish", 1), Curriculum("c1", "Math", 2)),
         phases = listOf(
             Phase("p1", "c2", 1, "Basics", "# Intro\n\"quoted\" é"),
             Phase("p2", "c2", 2, "Verbs", ""),
@@ -100,6 +100,14 @@ class BackupJsonTest {
             getJSONArray("topicProgress").getJSONObject(1).put("done", "12")
         }
         assertTrue(invalid(stringDone.toString()).contains("done"))
+    }
+
+    @Test
+    fun aCurriculumWithoutANumberIsInvalid() {
+        val json = JSONObject(BackupJson.encode(data)).apply {
+            getJSONArray("curricula").getJSONObject(0).remove("number")
+        }
+        assertTrue(invalid(json.toString()).contains("number"))
     }
 
     @Test

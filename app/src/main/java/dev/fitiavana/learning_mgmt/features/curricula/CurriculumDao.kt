@@ -7,8 +7,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CurriculumDao {
-    @Query("SELECT * FROM curriculum ORDER BY rowid")
+    @Query("SELECT * FROM curriculum ORDER BY number, id")
     fun observeAll(): Flow<List<Curriculum>>
+
+    @Query("SELECT COALESCE(MAX(number), 0) FROM curriculum")
+    suspend fun highestNumber(): Int
 
     @Insert
     suspend fun insert(curriculum: Curriculum)

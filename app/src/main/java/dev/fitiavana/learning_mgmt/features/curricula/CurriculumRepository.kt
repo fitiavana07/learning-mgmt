@@ -12,7 +12,7 @@ class CurriculumRepository(
 
     suspend fun create(name: String): String {
         val id = newId()
-        dao.insert(Curriculum(id, validName(name)))
+        dao.insert(Curriculum(id, validName(name), dao.highestNumber() + 1))
         return id
     }
 

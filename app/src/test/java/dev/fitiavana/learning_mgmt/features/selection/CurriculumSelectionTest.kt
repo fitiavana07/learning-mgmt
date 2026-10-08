@@ -58,7 +58,7 @@ class CurriculumSelectionTest {
         curricula.create("Spanish")
         curricula.create("Piano")
 
-        assertEquals(Curriculum("c1", "Spanish"), selectedWhere { it != null })
+        assertEquals(Curriculum("c1", "Spanish", 1), selectedWhere { it != null })
     }
 
     @Test
@@ -68,7 +68,7 @@ class CurriculumSelectionTest {
 
         selection.select(piano)
 
-        assertEquals(Curriculum(piano, "Piano"), selectedWhere { it?.id == piano })
+        assertEquals(Curriculum(piano, "Piano", 2), selectedWhere { it?.id == piano })
     }
 
     @Test

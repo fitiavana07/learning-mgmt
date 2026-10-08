@@ -24,7 +24,7 @@ interface TopicProgressDao {
             SELECT topic.*, topic_progress.status AS status, topic_progress.done AS done
             FROM topic LEFT JOIN topic_progress ON topic_progress.topicId = topic.id
             WHERE topic.phaseId = :phaseId
-            ORDER BY topic.number
+            ORDER BY topic.number, topic.id
         """
     }
 }

@@ -17,7 +17,7 @@ interface PhaseStatusDao {
         """
         SELECT phase.*, phase_status.status AS status
         FROM phase LEFT JOIN phase_status ON phase_status.phaseId = phase.id
-        ORDER BY phase.curriculumId, phase.number
+        ORDER BY phase.curriculumId, phase.number, phase.id
         """,
     )
     fun observeAllRows(): Flow<List<PhaseStatusRow>>
@@ -37,7 +37,7 @@ interface PhaseStatusDao {
             SELECT phase.*, phase_status.status AS status
             FROM phase LEFT JOIN phase_status ON phase_status.phaseId = phase.id
             WHERE phase.curriculumId = :curriculumId
-            ORDER BY phase.number
+            ORDER BY phase.number, phase.id
         """
     }
 }

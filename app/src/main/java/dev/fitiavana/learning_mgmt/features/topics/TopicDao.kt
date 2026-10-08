@@ -8,10 +8,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TopicDao {
-    @Query("SELECT * FROM topic WHERE phaseId = :phaseId ORDER BY number")
+    @Query("SELECT * FROM topic WHERE phaseId = :phaseId ORDER BY number, id")
     fun observeByPhase(phaseId: String): Flow<List<Topic>>
 
-    @Query("SELECT * FROM topic WHERE phaseId = :phaseId ORDER BY number")
+    @Query("SELECT * FROM topic WHERE phaseId = :phaseId ORDER BY number, id")
     suspend fun getByPhase(phaseId: String): List<Topic>
 
     @Query("SELECT * FROM topic WHERE id = :id")
