@@ -8,8 +8,11 @@ import dev.fitiavana.learning_mgmt.features.sync.SyncState
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-/** The passphrase protects the data on the local network, so a trivial one is refused. */
-const val MIN_PASSPHRASE_LENGTH = 6
+/**
+ * The passphrase protects the data on the local network, so a trivial one is refused. Anyone
+ * listening on the Wi-Fi can test guesses against what devices broadcast, so it must not be short.
+ */
+const val MIN_PASSPHRASE_LENGTH = 8
 
 class SyncViewModel(
     private val controls: SyncControls,

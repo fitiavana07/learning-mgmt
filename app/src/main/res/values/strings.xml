@@ -140,6 +140,9 @@
     <string name="sync_refresh">Refresh devices</string>
     <string name="sync_this_device">This device</string>
     <string name="sync_intro">Use the same passphrase on each of your devices. Devices on the same Wi-Fi that share it find each other and keep their data in sync.</string>
+    <string name="sync_local_network_title">Allow access to your network</string>
+    <string name="sync_local_network_message">Android needs your permission before this app can find and talk to your other devices on the same Wi-Fi.</string>
+    <string name="sync_local_network_allow">Allow</string>
     <string name="sync_passphrase_label">Passphrase</string>
     <string name="sync_passphrase_hint" tools:ignore="PluralsCandidate">At least %1$d characters</string>
     <string name="sync_passphrase_save">Save passphrase</string>

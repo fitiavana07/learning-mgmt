@@ -1,16 +1,19 @@
 package dev.fitiavana.learning_mgmt.features.sync
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.IOException
 
@@ -76,6 +79,30 @@ class SyncTransportTest {
         server.stop()
 
         assertThrows(IOException::class.java) { runBlocking { ask(port, "hello") } }
+    }
+
+    @Test
+    fun connectionsBeyondTheLimitAreDroppedWhileTheOthersAreServed() = runBlocking {
+        val release = CompletableDeferred<Unit>()
+        val server = SyncServer(scope) { input, output ->
+            FrameIO.read(input)
+            release.await()
+            FrameIO.write(output, "served".toByteArray())
+        }
+        val port = server.start()
+        val held = (1..SyncServer.MAX_CONNECTIONS).map {
+            async { SyncClient.connect(host, port) { input, output -> FrameIO.write(output, byteArrayOf(1)); String(FrameIO.read(input)) } }
+        }
+        delay(500) // let them all be accepted and parked in the handler
+
+        val extra = runCatching {
+            SyncClient.connect(host, port) { input, output -> FrameIO.write(output, byteArrayOf(1)); FrameIO.read(input) }
+        }
+        release.complete(Unit)
+
+        assertTrue(extra.isFailure)
+        assertEquals(List(SyncServer.MAX_CONNECTIONS) { "served" }, held.awaitAll())
+        server.stop()
     }
 
     @Test

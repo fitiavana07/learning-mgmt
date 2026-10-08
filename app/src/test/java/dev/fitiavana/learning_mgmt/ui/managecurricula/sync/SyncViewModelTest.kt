@@ -99,6 +99,8 @@ class SyncViewModelTest {
 
     @Test
     fun thePassphraseNeedsExactlyTheMinimumLengthToPass() = runBlocking {
+        assertEquals(8, MIN_PASSPHRASE_LENGTH)
+        assertFalse(viewModel.savePassphrase("a".repeat(MIN_PASSPHRASE_LENGTH - 1)))
         assertTrue(viewModel.savePassphrase("a".repeat(MIN_PASSPHRASE_LENGTH)))
     }
 

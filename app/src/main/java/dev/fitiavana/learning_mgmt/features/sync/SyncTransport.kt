@@ -11,6 +11,7 @@ import java.io.OutputStream
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.util.concurrent.Semaphore
 
 private const val CONNECT_TIMEOUT_MS = 3_000
 
@@ -26,6 +27,9 @@ class SyncServer(
     private val handler: suspend (InputStream, OutputStream) -> Unit,
 ) {
     private var socket: ServerSocket? = null
+
+    /** Anyone on the Wi-Fi can open a connection: only a few are served at once, the rest are dropped. */
+    private val slots = Semaphore(MAX_CONNECTIONS)
 
     /** Starts listening and returns the port. */
     @Synchronized
@@ -53,15 +57,22 @@ class SyncServer(
 
     private suspend fun serve(client: Socket) {
         client.use {
-            it.soTimeout = READ_TIMEOUT_MS
+            if (!slots.tryAcquire()) return
             try {
+                it.soTimeout = READ_TIMEOUT_MS
                 handler(it.getInputStream(), it.getOutputStream())
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 // One bad connection must not stop the server; the handler reports its own failures.
+            } finally {
+                slots.release()
             }
         }
+    }
+
+    companion object {
+        const val MAX_CONNECTIONS = 4
     }
 }
 

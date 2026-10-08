@@ -45,11 +45,15 @@ class SyncScreenTest {
 
     private val withPassphrase = SyncState(running = true, hasPassphrase = true, deviceName = "Sunny Wolf")
 
-    private fun show(state: SyncState) {
+    private var allowed = 0
+
+    private fun show(state: SyncState, localNetworkBlocked: Boolean = false) {
         compose.setContent {
             LearningmgmtTheme {
                 SyncScreen(
                     state = state,
+                    localNetworkBlocked = localNetworkBlocked,
+                    onAllowLocalNetwork = { allowed++ },
                     onSavePassphrase = { saved += it; accept },
                     onRemovePassphrase = { removed++ },
                     onAutoSyncChange = { autoSyncChanges += it },
@@ -92,7 +96,7 @@ class SyncScreenTest {
         compose.onNodeWithText("Save passphrase").performClick()
 
         assertEquals(listOf("abc"), saved)
-        compose.onNodeWithText("At least 6 characters", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("At least 8 characters", substring = true).assertIsDisplayed()
         compose.onNode(hasSetTextAction()).assertIsDisplayed()
     }
 
@@ -170,6 +174,31 @@ class SyncScreenTest {
         compose.onNodeWithText("Sync could not start", substring = true).assertIsDisplayed()
         compose.onNodeWithText("Address already in use", substring = true).assertIsDisplayed()
         compose.onAllNodesWithText("No other devices found").assertCountEquals(0)
+    }
+
+    @Test
+    fun whenAndroidBlocksTheLocalNetworkTheUserIsAskedToAllowIt() {
+        show(withPassphrase, localNetworkBlocked = true)
+
+        compose.onNodeWithText("Allow access to your network").assertIsDisplayed()
+        compose.onNodeWithText("Allow").performClick()
+
+        assertEquals(1, allowed)
+    }
+
+    @Test
+    fun noPermissionPromptWhenTheLocalNetworkIsAllowed() {
+        show(withPassphrase, localNetworkBlocked = false)
+
+        compose.onAllNodesWithText("Allow access to your network").assertCountEquals(0)
+    }
+
+    @Test
+    fun theLocalNetworkPromptIsShownBeforeAPassphraseToo() {
+        show(SyncState(running = true), localNetworkBlocked = true)
+
+        compose.onNodeWithText("Allow access to your network").assertIsDisplayed()
+        compose.onNodeWithText("Save passphrase").assertIsDisplayed()
     }
 
     @Test

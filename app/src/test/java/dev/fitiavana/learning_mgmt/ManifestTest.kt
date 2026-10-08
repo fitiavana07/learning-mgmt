@@ -19,6 +19,30 @@ class ManifestTest {
         assertEquals("true", application.getAttributeNS(android, "enableOnBackInvokedCallback"))
     }
 
+    private fun excludedFiles(path: String, section: String? = null): Set<String> {
+        val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(File(path))
+        val scope = if (section == null) document.documentElement
+        else document.getElementsByTagName(section).item(0) as org.w3c.dom.Element
+        val excludes = scope.getElementsByTagName("exclude")
+        return (0 until excludes.length).map { excludes.item(it) as org.w3c.dom.Element }
+            .filter { it.getAttribute("domain") == "file" }
+            .map { it.getAttribute("path") }
+            .toSet()
+    }
+
+    /**
+     * The sync settings hold the passphrase and this installation's id: neither may leave the
+     * device in a cloud backup or a device transfer (a restored id would be shared by two phones).
+     */
+    @Test
+    fun theSyncSettingsAreNeverBackedUpOrTransferred() {
+        val settings = "datastore/sync.preferences_pb"
+
+        assertEquals(setOf(settings), excludedFiles("src/main/res/xml/backup_rules.xml"))
+        assertEquals(setOf(settings), excludedFiles("src/main/res/xml/data_extraction_rules.xml", "cloud-backup"))
+        assertEquals(setOf(settings), excludedFiles("src/main/res/xml/data_extraction_rules.xml", "device-transfer"))
+    }
+
     /** Sync talks to the local network and nothing else: no location, no storage, no background access. */
     @Test
     fun theOnlyPermissionsAreTheOnesLocalNetworkSyncNeeds() {
@@ -31,6 +55,8 @@ class ManifestTest {
                 "android.permission.INTERNET",
                 "android.permission.ACCESS_WIFI_STATE",
                 "android.permission.CHANGE_WIFI_MULTICAST_STATE",
+                // Android 17 blocks traffic to the local network unless the user allows it at runtime.
+                "android.permission.ACCESS_LOCAL_NETWORK",
             ),
             permissions.toSet(),
         )

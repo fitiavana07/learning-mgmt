@@ -9,7 +9,7 @@ import java.io.OutputStream
 /** Messages on a stream: a 4-byte big-endian length, then that many bytes. */
 object FrameIO {
     /** A whole database snapshot fits well below this; anything larger is not from a peer of ours. */
-    const val DEFAULT_MAX_SIZE = 32 * 1024 * 1024
+    const val DEFAULT_MAX_SIZE = 16 * 1024 * 1024
 
     fun write(out: OutputStream, payload: ByteArray) {
         val data = DataOutputStream(out)

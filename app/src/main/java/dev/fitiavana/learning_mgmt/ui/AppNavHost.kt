@@ -36,7 +36,7 @@ import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.managetopics.
 import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.managetopics.ManageTopicsViewModel
 import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.managetopics.topiceditor.TopicEditorRoute
 import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.phaseeditor.PhaseEditorRoute
-import dev.fitiavana.learning_mgmt.ui.managecurricula.sync.SyncScreen
+import dev.fitiavana.learning_mgmt.ui.managecurricula.sync.SyncRoute
 import dev.fitiavana.learning_mgmt.ui.managecurricula.sync.SyncViewModel
 
 private object Routes {
@@ -168,17 +168,7 @@ fun AppNavHost(container: AppContainer) {
                     initializer { SyncViewModel(container.syncCoordinator, container.syncSettings) }
                 },
             )
-            val state by sync.state.collectAsStateWithLifecycle()
-            SyncScreen(
-                state = state,
-                onSavePassphrase = sync::savePassphrase,
-                onRemovePassphrase = sync::removePassphrase,
-                onAutoSyncChange = sync::setAutoSync,
-                onRefresh = sync::refresh,
-                onSyncWith = sync::syncWith,
-                onSyncAll = sync::syncAll,
-                onBack = { navController.popBackStack() },
-            )
+            SyncRoute(viewModel = sync, onBack = { navController.popBackStack() })
         }
         animatedComposable(Routes.MANAGE_PHASES, arguments = curriculumArguments) { entry ->
             val curriculumId = entry.curriculumId()

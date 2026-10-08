@@ -54,6 +54,8 @@ import java.util.Date
 @Composable
 fun SyncScreen(
     state: SyncState,
+    localNetworkBlocked: Boolean,
+    onAllowLocalNetwork: () -> Unit,
     onSavePassphrase: (String) -> Boolean,
     onRemovePassphrase: () -> Unit,
     onAutoSyncChange: (Boolean) -> Unit,
@@ -90,6 +92,7 @@ fun SyncScreen(
                     )
                 }
             }
+            if (localNetworkBlocked) item { LocalNetworkPrompt(onAllowLocalNetwork) }
             item { PassphraseSection(state.hasPassphrase, onSavePassphrase, onRemove = { confirmRemove = true }) }
             if (state.hasPassphrase) {
                 item { AutoSyncRow(state.autoSync, onAutoSyncChange) }
@@ -114,6 +117,19 @@ fun SyncScreen(
             onConfirm = { confirmRemove = false; onRemovePassphrase() },
             onDismiss = { confirmRemove = false },
         )
+    }
+}
+
+@Composable
+private fun LocalNetworkPrompt(onAllow: () -> Unit) {
+    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.sync_local_network_title), style = MaterialTheme.typography.titleMedium)
+        Text(
+            stringResource(R.string.sync_local_network_message),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Button(onClick = onAllow) { Text(stringResource(R.string.sync_local_network_allow)) }
     }
 }
 
