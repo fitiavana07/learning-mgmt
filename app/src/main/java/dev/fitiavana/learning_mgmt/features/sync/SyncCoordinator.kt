@@ -58,7 +58,7 @@ class SyncCoordinator(
     private val now: () -> Long = System::currentTimeMillis,
     private val debounceMs: Long = 3_000,
     private val announceIntervalMs: Long = 5_000,
-) {
+) : SyncControls {
     /** The open network: the session logic for this passphrase, who is around, and discovery. */
     private class Active(val session: SyncSession, val registry: PeerRegistry, val discovery: Discovery)
 
@@ -78,7 +78,7 @@ class SyncCoordinator(
 
     private var job: Job? = null
 
-    val state: StateFlow<SyncState> = mutableState
+    override val state: StateFlow<SyncState> = mutableState
 
     /** Call when the app comes to the foreground. */
     @Synchronized
@@ -115,15 +115,15 @@ class SyncCoordinator(
     }
 
     /** Forgets the peers and asks the network who is there; the ones that answer are listed again. */
-    fun refresh() {
+    override fun refresh() {
         active?.discovery?.refresh()
     }
 
-    fun syncWith(deviceId: String) {
+    override fun syncWith(deviceId: String) {
         scope.launch { sync(deviceId) }
     }
 
-    fun syncAll() {
+    override fun syncAll() {
         active?.registry?.peers?.value?.forEach { syncWith(it.info.deviceId) }
     }
 
