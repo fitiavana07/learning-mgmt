@@ -12,6 +12,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val container = (application as LearningMgmtApplication).container
+        lifecycle.addObserver(ForegroundObserver(container.syncCoordinator::start, container.syncCoordinator::stop))
         setContent {
             LearningmgmtTheme {
                 AppNavHost(container)

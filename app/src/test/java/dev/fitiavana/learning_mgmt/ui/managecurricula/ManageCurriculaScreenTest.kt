@@ -1,6 +1,7 @@
 package dev.fitiavana.learning_mgmt.ui.managecurricula
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
@@ -40,6 +41,7 @@ class ManageCurriculaScreenTest {
     )
 
     private var backups = 0
+    private var syncs = 0
     private var restores = 0
     private var confirmedRestores = 0
     private var dismissedRestores = 0
@@ -62,6 +64,7 @@ class ManageCurriculaScreenTest {
                     onDelete = { deleted += it },
                     onCurriculumClick = { opened += it },
                     onBackup = { backups++ },
+                    onSync = { syncs++ },
                     onRestore = { restores++ },
                     onConfirmRestore = { confirmedRestores++ },
                     onDismissRestore = { dismissedRestores++ },
@@ -156,7 +159,7 @@ class ManageCurriculaScreenTest {
 
     // Backup and restore
 
-    private fun openTopBarMenu() = compose.onNodeWithContentDescription("Backup and restore").performClick()
+    private fun openTopBarMenu() = compose.onNodeWithContentDescription("Backup, restore and sync").performClick()
 
     private val pending = PendingRestore(
         json = "{}",
@@ -176,6 +179,35 @@ class ManageCurriculaScreenTest {
 
         compose.onNodeWithText("Back up…").assertIsDisplayed()
         compose.onNodeWithText("Restore…").assertIsDisplayed()
+    }
+
+    @Test
+    fun topBarMenuOffersSync() {
+        show()
+
+        openTopBarMenu()
+
+        compose.onNodeWithText("Sync with other devices").assertIsDisplayed()
+    }
+
+    @Test
+    fun choosingSyncOpensTheSyncScreen() {
+        show()
+
+        openTopBarMenu()
+        compose.onNodeWithText("Sync with other devices").performClick()
+
+        assertEquals(1, syncs)
+        assertEquals(0, backups)
+    }
+
+    @Test
+    fun syncStaysAvailableWhileABackupIsRunning() {
+        show(busy = true)
+
+        openTopBarMenu()
+
+        compose.onNodeWithText("Sync with other devices").assertIsEnabled()
     }
 
     @Test

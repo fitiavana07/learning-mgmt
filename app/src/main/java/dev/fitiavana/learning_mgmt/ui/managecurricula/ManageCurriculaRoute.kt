@@ -23,6 +23,7 @@ private const val JSON = "application/json"
 fun ManageCurriculaRoute(
     viewModel: ManageCurriculaViewModel,
     onCurriculumClick: (String) -> Unit,
+    onSync: () -> Unit,
     onBack: () -> Unit,
 ) {
     val rows by viewModel.rows.collectAsStateWithLifecycle()
@@ -61,6 +62,7 @@ fun ManageCurriculaRoute(
         onDelete = viewModel::delete,
         onCurriculumClick = onCurriculumClick,
         onBackup = { saveBackup.launch(backupFileName(LocalDateTime.now())) },
+        onSync = onSync,
         onRestore = { pickBackup.launch(arrayOf(JSON, "text/plain", "application/octet-stream")) },
         onConfirmRestore = viewModel::confirmRestore,
         onDismissRestore = viewModel::dismissRestore,

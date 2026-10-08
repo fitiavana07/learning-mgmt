@@ -64,6 +64,7 @@ fun ManageCurriculaScreen(
     onDelete: (String) -> Unit,
     onCurriculumClick: (String) -> Unit,
     onBackup: () -> Unit,
+    onSync: () -> Unit,
     onRestore: () -> Unit,
     onConfirmRestore: () -> Unit,
     onDismissRestore: () -> Unit,
@@ -87,7 +88,7 @@ fun ManageCurriculaScreen(
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                         }
                     },
-                    actions = { BackupMenu(enabled = !busy, onBackup = onBackup, onRestore = onRestore) },
+                    actions = { OverflowMenu(busy = busy, onBackup = onBackup, onRestore = onRestore, onSync = onSync) },
                 )
                 if (busy) {
                     val working = stringResource(R.string.backup_working)
@@ -173,8 +174,9 @@ fun ManageCurriculaScreen(
     }
 }
 
+/** Backup and restore are off while one runs; syncing is independent of them. */
 @Composable
-private fun BackupMenu(enabled: Boolean, onBackup: () -> Unit, onRestore: () -> Unit) {
+private fun OverflowMenu(busy: Boolean, onBackup: () -> Unit, onRestore: () -> Unit, onSync: () -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { open = true }) {
@@ -182,13 +184,17 @@ private fun BackupMenu(enabled: Boolean, onBackup: () -> Unit, onRestore: () -> 
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             DropdownMenuItem(
+                text = { Text(stringResource(R.string.sync_menu)) },
+                onClick = { open = false; onSync() },
+            )
+            DropdownMenuItem(
                 text = { Text(stringResource(R.string.backup_menu_backup)) },
-                enabled = enabled,
+                enabled = !busy,
                 onClick = { open = false; onBackup() },
             )
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.backup_menu_restore)) },
-                enabled = enabled,
+                enabled = !busy,
                 onClick = { open = false; onRestore() },
             )
         }

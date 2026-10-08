@@ -1,6 +1,7 @@
 package dev.fitiavana.learning_mgmt
 
 import android.content.Context
+import android.net.wifi.WifiManager
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.room.Room
@@ -9,17 +10,21 @@ import dev.fitiavana.learning_mgmt.db.DB_VERSION
 import dev.fitiavana.learning_mgmt.db.MIGRATION_1_2
 import dev.fitiavana.learning_mgmt.db.MIGRATION_2_3
 import dev.fitiavana.learning_mgmt.features.backup.BackupRepository
-import dev.fitiavana.learning_mgmt.features.topics.TopicRepository
 import dev.fitiavana.learning_mgmt.features.curricula.CurriculumRepository
 import dev.fitiavana.learning_mgmt.features.phases.PhaseRepository
 import dev.fitiavana.learning_mgmt.features.progress.ProgressRepository
 import dev.fitiavana.learning_mgmt.features.selection.CurriculumSelection
 import dev.fitiavana.learning_mgmt.features.selection.SelectedCurriculumStore
+import dev.fitiavana.learning_mgmt.features.sync.ChangeTracker
+import dev.fitiavana.learning_mgmt.features.sync.LockedDiscoveryChannel
+import dev.fitiavana.learning_mgmt.features.sync.StampClock
+import dev.fitiavana.learning_mgmt.features.sync.SyncCoordinator
+import dev.fitiavana.learning_mgmt.features.sync.SyncRepository
+import dev.fitiavana.learning_mgmt.features.sync.SyncSettingsStore
+import dev.fitiavana.learning_mgmt.features.sync.UdpDiscoveryChannel
+import dev.fitiavana.learning_mgmt.features.topics.TopicRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import dev.fitiavana.learning_mgmt.features.sync.ChangeTracker
-import dev.fitiavana.learning_mgmt.features.sync.StampClock
-import dev.fitiavana.learning_mgmt.features.sync.SyncSettingsStore
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 
@@ -67,5 +72,32 @@ class AppContainer(context: Context) {
         changeTracker,
         selectedCurriculumStore,
         DB_VERSION,
+    )
+
+    // Without the multicast lock Android drops incoming broadcasts, which discovery relies on.
+    private val multicastLock = (context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager)
+        ?.createMulticastLock("learning-mgmt-sync")
+        ?.apply { setReferenceCounted(false) }
+
+    /** Runs while the app is on screen; started and stopped by [MainActivity]. */
+    val syncCoordinator = SyncCoordinator(
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        repository = SyncRepository(
+            database,
+            database.backupDao(),
+            database.syncDao(),
+            database.syncMetaDao(),
+            changeTracker,
+            DB_VERSION,
+        ),
+        settings = syncSettings,
+        changes = changeTracker.changes,
+        newChannel = {
+            LockedDiscoveryChannel(
+                UdpDiscoveryChannel(),
+                acquire = { multicastLock?.acquire() },
+                release = { if (multicastLock?.isHeld == true) multicastLock.release() },
+            )
+        },
     )
 }

@@ -108,6 +108,19 @@ class AppNavHostTest {
     }
 
     @Test
+    fun theSyncScreenIsReachedFromTheManageCurriculaMenuAndBackAgain() {
+        openManageCurricula()
+
+        compose.onNodeWithContentDescription("Backup, restore and sync").performClick()
+        compose.onNodeWithText("Sync with other devices").performClick()
+        waitForText("Save passphrase")
+        compose.onNodeWithText("Save passphrase").assertIsDisplayed()
+
+        compose.onNodeWithContentDescription("Back").performClick()
+        waitForText("2 phases")
+    }
+
+    @Test
     fun drawerButtonOpensManageCurriculaListingCurriculaWithPhaseCounts() {
         openManageCurricula()
 

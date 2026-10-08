@@ -319,6 +319,49 @@ class SyncCoordinatorTest {
     }
 
     @Test
+    fun aNetworkThatCannotBeOpenedIsReportedAndNothingCrashes() = runBlocking {
+        val failing = SyncCoordinator(
+            scope = scope,
+            repository = a.sync,
+            settings = device(a, "dev-a").settings,
+            changes = a.tracker.changes,
+            newChannel = { throw java.net.BindException("Address already in use") },
+            debounceMs = 100,
+            announceIntervalMs = 200,
+        )
+
+        failing.start()
+
+        waitUntil("the problem is reported") { failing.state.value.networkError != null }
+        assertTrue(failing.state.value.networkError!!.contains("Address already in use"))
+        assertTrue(failing.state.value.running)
+        failing.stop()
+    }
+
+    @Test
+    fun refreshingTriesToOpenTheNetworkAgain() = runBlocking {
+        var failing = true
+        val settings = device(a, "dev-a").settings
+        val coordinator = SyncCoordinator(
+            scope = scope,
+            repository = a.sync,
+            settings = settings,
+            changes = a.tracker.changes,
+            newChannel = { if (failing) throw java.net.BindException("busy") else network.channel() },
+            debounceMs = 100,
+            announceIntervalMs = 200,
+        )
+        coordinator.start()
+        waitUntil("the problem is reported") { coordinator.state.value.networkError != null }
+
+        failing = false
+        coordinator.refresh()
+
+        waitUntil("the problem is cleared") { coordinator.state.value.networkError == null && network.channels.isNotEmpty() }
+        coordinator.stop()
+    }
+
+    @Test
     fun refreshAsksTheNetworkWhoIsThere() = runBlocking {
         val first = device(a, "dev-a")
         first.coordinator.start()

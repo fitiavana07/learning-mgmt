@@ -36,6 +36,8 @@ import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.managetopics.
 import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.managetopics.ManageTopicsViewModel
 import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.managetopics.topiceditor.TopicEditorRoute
 import dev.fitiavana.learning_mgmt.ui.managecurricula.managephases.phaseeditor.PhaseEditorRoute
+import dev.fitiavana.learning_mgmt.ui.managecurricula.sync.SyncScreen
+import dev.fitiavana.learning_mgmt.ui.managecurricula.sync.SyncViewModel
 
 private object Routes {
     const val HOME = "home"
@@ -43,6 +45,8 @@ private object Routes {
     const val PHASE_ID = "phaseId"
     const val PHASE = "phases/{$PHASE_ID}"
     fun phase(id: String) = "phases/$id"
+
+    const val SYNC = "sync"
 
     const val MANAGE_CURRICULA = "manage-curricula"
     const val CURRICULUM_ID = "curriculumId"
@@ -154,6 +158,25 @@ fun AppNavHost(container: AppContainer) {
             ManageCurriculaRoute(
                 viewModel = manage,
                 onCurriculumClick = { navController.navigate(Routes.managePhases(it)) },
+                onSync = { navController.navigate(Routes.SYNC) },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        animatedComposable(Routes.SYNC) {
+            val sync: SyncViewModel = viewModel(
+                factory = viewModelFactory {
+                    initializer { SyncViewModel(container.syncCoordinator, container.syncSettings) }
+                },
+            )
+            val state by sync.state.collectAsStateWithLifecycle()
+            SyncScreen(
+                state = state,
+                onSavePassphrase = sync::savePassphrase,
+                onRemovePassphrase = sync::removePassphrase,
+                onAutoSyncChange = sync::setAutoSync,
+                onRefresh = sync::refresh,
+                onSyncWith = sync::syncWith,
+                onSyncAll = sync::syncAll,
                 onBack = { navController.popBackStack() },
             )
         }

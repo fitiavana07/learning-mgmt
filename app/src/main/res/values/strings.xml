@@ -111,7 +111,7 @@
     </plurals>
 
     <string name="action_restore">Restore</string>
-    <string name="backup_menu">Backup and restore</string>
+    <string name="backup_menu">Backup, restore and sync</string>
     <string name="backup_menu_backup">Back up…</string>
     <string name="backup_menu_restore">Restore…</string>
     <string name="backup_working">Working…</string>
@@ -134,4 +134,37 @@
         <item quantity="one">%1$d topic</item>
         <item quantity="other">%1$d topics</item>
     </plurals>
+
+    <string name="sync_menu">Sync with other devices</string>
+    <string name="sync_title">Sync</string>
+    <string name="sync_refresh">Refresh devices</string>
+    <string name="sync_this_device">This device</string>
+    <string name="sync_intro">Use the same passphrase on each of your devices. Devices on the same Wi-Fi that share it find each other and keep their data in sync.</string>
+    <string name="sync_passphrase_label">Passphrase</string>
+    <string name="sync_passphrase_hint" tools:ignore="PluralsCandidate">At least %1$d characters</string>
+    <string name="sync_passphrase_save">Save passphrase</string>
+    <string name="sync_passphrase_change">Change passphrase</string>
+    <string name="sync_passphrase_remove">Remove passphrase</string>
+    <string name="sync_passphrase_set">Passphrase is set</string>
+    <string name="sync_remove_title">Stop syncing?</string>
+    <string name="sync_remove_confirm">Stop syncing</string>
+    <string name="sync_remove_message">This device will no longer find or share data with your other devices. Your data on this device stays.</string>
+    <string name="sync_auto">Sync automatically</string>
+    <string name="sync_auto_hint">When a device appears, and shortly after you make a change</string>
+    <string name="sync_devices">Devices</string>
+    <string name="sync_all">Sync all</string>
+    <string name="sync_sync">Sync</string>
+    <string name="sync_no_devices">No other devices found</string>
+    <string name="sync_no_devices_hint">Open the app on another device on the same Wi-Fi, with the same passphrase.</string>
+    <string name="sync_network_error" tools:ignore="PluralsCandidate">Sync could not start: %1$s</string>
+    <string name="sync_network_error_hint">Check that you are connected to Wi-Fi, then refresh.</string>
+    <string name="sync_status_idle">Not synced yet</string>
+    <string name="sync_status_syncing">Syncing…</string>
+    <string name="sync_status_synced" tools:ignore="PluralsCandidate">Synced at %1$s</string>
+    <string name="sync_failed_no_answer">No answer. Check that both devices use the same passphrase.</string>
+    <string name="sync_failed_wrong_passphrase">Wrong passphrase.</string>
+    <string name="sync_failed_incompatible">The other device runs an incompatible version of the app.</string>
+    <string name="sync_failed_refused" tools:ignore="PluralsCandidate">The other device could not use the data: %1$s</string>
+    <string name="sync_failed_invalid">The other device sent invalid data.</string>
+    <string name="sync_failed_network">Could not connect to the device.</string>
 </resources>

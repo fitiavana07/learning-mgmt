@@ -4,11 +4,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -39,6 +41,8 @@ data class SyncState(
     val deviceName: String = "",
     val peers: List<PeerState> = emptyList(),
     val lastSyncedAt: Long? = null,
+    /** Why sync could not open the network (no Wi-Fi, port taken...); refreshing tries again. */
+    val networkError: String? = null,
 )
 
 /**
@@ -65,6 +69,9 @@ class SyncCoordinator(
     private val mutableState = MutableStateFlow(SyncState())
     private val statuses = MutableStateFlow<Map<String, PeerSync>>(emptyMap())
     private val inFlight = ConcurrentHashMap.newKeySet<String>()
+
+    /** Bumped to open the network again after it failed to open. */
+    private val retry = MutableStateFlow(0)
 
     /** Counts the local changes made; [syncedVersion] is what each peer has been synced up to. */
     private val localVersion = AtomicLong()
@@ -97,7 +104,7 @@ class SyncCoordinator(
             }
             launch { changes.collect { localVersion.incrementAndGet() } }
             launch { pushLocalChanges() }
-            settings.passphrase.collectLatest { passphrase ->
+            settings.passphrase.combine(retry) { passphrase, _ -> passphrase }.collectLatest { passphrase ->
                 mutableState.update { it.copy(hasPassphrase = passphrase != null) }
                 if (passphrase != null) runNetwork(self, passphrase)
             }
@@ -111,12 +118,17 @@ class SyncCoordinator(
         job = null
         active = null
         statuses.value = emptyMap()
-        mutableState.update { it.copy(running = false, peers = emptyList()) }
+        mutableState.update { it.copy(running = false, peers = emptyList(), networkError = null) }
     }
 
-    /** Forgets the peers and asks the network who is there; the ones that answer are listed again. */
+    /**
+     * Forgets the peers and asks the network who is there; the ones that answer are listed again.
+     * If the network could not be opened, this tries to open it again.
+     */
     override fun refresh() {
-        active?.discovery?.refresh()
+        val current = active
+        if (current != null) current.discovery.refresh()
+        else if (mutableState.value.hasPassphrase) retry.update { it + 1 }
     }
 
     override fun syncWith(deviceId: String) {
@@ -142,7 +154,18 @@ class SyncCoordinator(
             val version = localVersion.get()
             (session.respond(input, output) as? SessionResult.Synced)?.let { record(it.peer.deviceId, it, version) }
         }
-        val discovery = Discovery(this, newChannel(), registry, self, server.start(), crypto.groupTag, announceIntervalMs)
+        var channel: DiscoveryChannel? = null
+        val discovery = try {
+            channel = newChannel()
+            Discovery(this, channel, registry, self, server.start(), crypto.groupTag, announceIntervalMs)
+        } catch (e: IOException) {
+            // No Wi-Fi, a port already taken...: say so and wait for a retry or another passphrase.
+            channel?.close()
+            server.stop()
+            mutableState.update { it.copy(networkError = e.message ?: "The network could not be opened") }
+            awaitCancellation()
+        }
+        mutableState.update { it.copy(networkError = null) }
         active = Active(session, registry, discovery)
         discovery.start()
         try {
