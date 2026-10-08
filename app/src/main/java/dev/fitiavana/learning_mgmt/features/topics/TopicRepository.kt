@@ -7,6 +7,7 @@ import dev.fitiavana.learning_mgmt.db.UuidGenerator
 import dev.fitiavana.learning_mgmt.features.sync.ChangeTracker
 import dev.fitiavana.learning_mgmt.features.sync.SyncKind
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /** Structure edits only. Nothing here reads or writes progress. */
 class TopicRepository(
@@ -15,7 +16,8 @@ class TopicRepository(
     private val tracker: ChangeTracker,
     private val newId: IdGenerator = UuidGenerator,
 ) {
-    fun observe(phaseId: String): Flow<List<Topic>> = dao.observeByPhase(phaseId)
+    /** The topics in order, numbered by their place: stored numbers may have gaps or duplicates after a sync. */
+    fun observe(phaseId: String): Flow<List<Topic>> = dao.observeByPhase(phaseId).map(TopicOrdering::renumber)
 
     /** A topic with a [total] is quantified (progress counted in [unit]); without one it is simple. */
     suspend fun add(phaseId: String, name: String, total: Int? = null, unit: String? = null): String =

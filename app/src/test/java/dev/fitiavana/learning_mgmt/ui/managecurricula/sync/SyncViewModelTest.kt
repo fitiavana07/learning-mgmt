@@ -75,10 +75,10 @@ class SyncViewModelTest {
 
     /** The ViewModel writes in the background: wait for the stored value to become [expected]. */
     private suspend fun passphraseBecomes(expected: String?) =
-        withTimeout(5_000) { settings.passphrase.first { it == expected } }
+        withTimeout(WAIT_MS) { settings.passphrase.first { it == expected } }
 
     private suspend fun autoSyncBecomes(expected: Boolean) =
-        withTimeout(5_000) { settings.autoSync.first { it == expected } }
+        withTimeout(WAIT_MS) { settings.autoSync.first { it == expected } }
 
     @Test
     fun aValidPassphraseIsTrimmedAndStored() = runBlocking {
@@ -128,5 +128,10 @@ class SyncViewModelTest {
         viewModel.syncAll()
 
         assertEquals(listOf("refresh", "syncWith dev-b", "syncAll"), controls.calls)
+    }
+
+    private companion object {
+        /** Generous: the whole suite runs on one busy machine and DataStore writes on another thread. */
+        const val WAIT_MS = 20_000L
     }
 }

@@ -7,6 +7,7 @@ import dev.fitiavana.learning_mgmt.db.UuidGenerator
 import dev.fitiavana.learning_mgmt.features.sync.ChangeTracker
 import dev.fitiavana.learning_mgmt.features.sync.SyncKind
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /** Structure edits only. Nothing here reads or writes progress. */
 class PhaseRepository(
@@ -15,7 +16,9 @@ class PhaseRepository(
     private val tracker: ChangeTracker,
     private val newId: IdGenerator = UuidGenerator,
 ) {
-    fun observe(curriculumId: String): Flow<List<Phase>> = dao.observeByCurriculum(curriculumId)
+    /** The phases in order, numbered by their place: stored numbers may have gaps or duplicates after a sync. */
+    fun observe(curriculumId: String): Flow<List<Phase>> =
+        dao.observeByCurriculum(curriculumId).map(PhaseOrdering::renumber)
 
     suspend fun add(curriculumId: String, name: String, description: String): String =
         db.withTransaction {
