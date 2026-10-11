@@ -14,8 +14,10 @@ private val editing = PhaseEditorState(
     isNew = false,
     name = "Past Tenses",
     description = DESCRIPTION,
+    goal = "Narrate past events in conversation",
     initialName = "Past Tenses",
     initialDescription = DESCRIPTION,
+    initialGoal = "Narrate past events in conversation",
 )
 
 private class EditorStates : PreviewParameterProvider<PhaseEditorState> {
@@ -36,6 +38,7 @@ private fun PhaseEditorScreenPreview(@PreviewParameter(EditorStates::class) stat
             state = state,
             onNameChange = {},
             onDescriptionChange = {},
+            onGoalChange = {},
             onPreviewChange = {},
             onSave = {},
             onClose = {},

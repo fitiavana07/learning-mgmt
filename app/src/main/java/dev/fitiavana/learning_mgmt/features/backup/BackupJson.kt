@@ -39,6 +39,7 @@ object BackupJson {
                 .put("number", it.number)
                 .put("name", it.name)
                 .put("description", it.description)
+                .put("goal", it.goal)
         })
         put("phaseStatuses", array(data.phaseStatuses) {
             put("phaseId", it.phaseId).put("status", it.status.name)
@@ -82,7 +83,14 @@ object BackupJson {
         selectedCurriculumId = root.optionalString("selectedCurriculumId"),
         curricula = root.rows("curricula") { Curriculum(string("id"), string("name"), int("number")) },
         phases = root.rows("phases") {
-            Phase(string("id"), string("curriculumId"), int("number"), string("name"), string("description"))
+            Phase(
+                string("id"),
+                string("curriculumId"),
+                int("number"),
+                string("name"),
+                string("description"),
+                string("goal"),
+            )
         },
         phaseStatuses = root.rows("phaseStatuses") { PhaseStatus(string("phaseId"), status()) },
         topics = root.rows("topics") {

@@ -61,6 +61,25 @@ class PhaseRepositoryTest {
     }
 
     @Test
+    fun addStoresTheGoal() = runBlocking {
+        phases.add(curriculumId, "Basics", "## Intro", goal = "Order food")
+
+        assertEquals(
+            Phase("p1", curriculumId, 1, "Basics", "## Intro", "Order food"),
+            phases.observe(curriculumId).first()[0],
+        )
+    }
+
+    @Test
+    fun updateChangesTheGoal() = runBlocking {
+        val id = phases.add(curriculumId, "Basics", "d", goal = "old")
+
+        phases.update(id, "Basics", "d", goal = "new")
+
+        assertEquals("new", phases.observe(curriculumId).first()[0].goal)
+    }
+
+    @Test
     fun deleteRenumbersTheRemainingPhases() = runBlocking {
         val first = phases.add(curriculumId, "A", "")
         phases.add(curriculumId, "B", "")

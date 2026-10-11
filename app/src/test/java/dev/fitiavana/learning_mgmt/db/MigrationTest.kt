@@ -87,6 +87,24 @@ class MigrationTest {
         }
     }
 
+    @Test
+    fun migrating3To4GivesExistingPhasesAnEmptyGoal() {
+        helper.createDatabase(DB_NAME, 3).apply {
+            execSQL("INSERT INTO curriculum (id, name, number) VALUES ('c1', 'Spanish', 1)")
+            execSQL("INSERT INTO phase (id, curriculumId, number, name, description) VALUES ('p1', 'c1', 1, 'Basics', 'md')")
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(DB_NAME, 4, true, MIGRATION_3_4)
+
+        db.query("SELECT name, description, goal FROM phase WHERE id = 'p1'").use {
+            it.moveToFirst()
+            assertEquals("Basics", it.getString(0))
+            assertEquals("md", it.getString(1))
+            assertEquals("", it.getString(2))
+        }
+    }
+
     private companion object {
         const val DB_NAME = "migration-test"
     }

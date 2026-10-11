@@ -18,8 +18,8 @@ import dev.fitiavana.learning_mgmt.R
 import dev.fitiavana.learning_mgmt.features.phases.Phase
 
 /**
- * A phase's "Phase N · Name" title and rendered (collapsible) description, under an optional
- * [header] and above an optional [footer].
+ * A phase's "Phase N · Name" title and its [body] (the rendered, collapsible description by
+ * default), under an optional [header] and above an optional [footer].
  */
 @Composable
 fun PhaseContent(
@@ -27,6 +27,7 @@ fun PhaseContent(
     modifier: Modifier = Modifier,
     header: @Composable () -> Unit = {},
     footer: @Composable () -> Unit = {},
+    body: @Composable () -> Unit = { PhaseDescription(phase.description) },
 ) {
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
         header()
@@ -36,9 +37,14 @@ fun PhaseContent(
             style = MaterialTheme.typography.headlineSmall,
         )
         Spacer(Modifier.height(16.dp))
-        CollapsibleContent(contentModifier = Modifier.testTag("phase-description")) {
-            MarkdownText(phase.description)
-        }
+        body()
         footer()
+    }
+}
+
+@Composable
+private fun PhaseDescription(description: String) {
+    CollapsibleContent(contentModifier = Modifier.testTag("phase-description")) {
+        MarkdownText(description)
     }
 }

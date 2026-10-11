@@ -21,7 +21,7 @@ class BackupJsonTest {
         selectedCurriculumId = "c2",
         curricula = listOf(Curriculum("c2", "Spanish", 1), Curriculum("c1", "Math", 2)),
         phases = listOf(
-            Phase("p1", "c2", 1, "Basics", "# Intro\n\"quoted\" é"),
+            Phase("p1", "c2", 1, "Basics", "# Intro\n\"quoted\" é", "Order \"food\"\nin Spanish"),
             Phase("p2", "c2", 2, "Verbs", ""),
         ),
         phaseStatuses = listOf(PhaseStatus("p1", Status.IN_PROGRESS)),

@@ -32,6 +32,7 @@ class PhaseEditorScreenTest {
 
     private val names = mutableListOf<String>()
     private val descriptions = mutableListOf<String>()
+    private val goals = mutableListOf<String>()
     private val previews = mutableListOf<Boolean>()
     private var saves = 0
     private var closes = 0
@@ -58,6 +59,7 @@ class PhaseEditorScreenTest {
                     state = current,
                     onNameChange = { names += it; current = current.copy(name = it) },
                     onDescriptionChange = { descriptions += it; current = current.copy(description = it) },
+                    onGoalChange = { goals += it; current = current.copy(goal = it) },
                     onPreviewChange = { previews += it },
                     onSave = { saves++ },
                     onClose = { closes++ },
@@ -107,6 +109,16 @@ class PhaseEditorScreenTest {
 
         assertEquals(listOf("Foundations"), names)
         assertEquals(listOf("# Hello"), descriptions)
+    }
+
+    @Test
+    fun theGoalIsEditedAsPlainTextEvenInPreviewMode() {
+        show(editing.copy(goal = "Learn **this**", initialGoal = "Learn **this**", preview = true))
+
+        compose.onNodeWithText("Learn **this**").assertIsDisplayed()
+        compose.onNodeWithTag("goal-field").performTextReplacement("Order food")
+
+        assertEquals(listOf("Order food"), goals)
     }
 
     @Test

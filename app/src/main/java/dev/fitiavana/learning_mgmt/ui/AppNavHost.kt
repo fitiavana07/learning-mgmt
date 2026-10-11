@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import dev.fitiavana.learning_mgmt.AppContainer
 import dev.fitiavana.learning_mgmt.ui.home.HomeRoute
+import dev.fitiavana.learning_mgmt.ui.home.PhaseDescriptionScreen
 import dev.fitiavana.learning_mgmt.ui.home.HomeViewModel
 import dev.fitiavana.learning_mgmt.ui.home.drawer.DrawerViewModel
 import dev.fitiavana.learning_mgmt.ui.home.phases.PhaseViewModel
@@ -45,6 +46,8 @@ private object Routes {
     const val PHASE_ID = "phaseId"
     const val PHASE = "phases/{$PHASE_ID}"
     fun phase(id: String) = "phases/$id"
+    const val PHASE_DESCRIPTION = "$PHASE/description"
+    fun phaseDescription(id: String) = "${phase(id)}/description"
 
     const val SYNC = "sync"
 
@@ -141,6 +144,7 @@ fun AppNavHost(container: AppContainer) {
                 drawer = drawer,
                 onManageCurricula = { navController.navigate(Routes.MANAGE_CURRICULA) },
                 onShowPhases = { navController.navigate(Routes.PHASES) },
+                onShowDescription = { navController.navigate(Routes.phaseDescription(it)) },
             )
         }
         composable(Routes.MANAGE_CURRICULA) {
@@ -287,6 +291,18 @@ fun AppNavHost(container: AppContainer) {
                 onBack = { navController.popBackStack() },
                 topicHandlers = phase.topicHandlers,
             )
+        }
+        animatedComposable(Routes.PHASE_DESCRIPTION, arguments = listOf(navArgument(Routes.PHASE_ID) { type = NavType.StringType })) { entry ->
+            val phaseId = entry.phaseId()
+            val phase: PhaseViewModel = viewModel(
+                factory = viewModelFactory {
+                    initializer {
+                        PhaseViewModel(phaseId, container.curriculumSelection, container.progressRepository)
+                    }
+                },
+            )
+            val state by phase.uiState.collectAsStateWithLifecycle()
+            PhaseDescriptionScreen(state = state, onBack = { navController.popBackStack() })
         }
     }
 }

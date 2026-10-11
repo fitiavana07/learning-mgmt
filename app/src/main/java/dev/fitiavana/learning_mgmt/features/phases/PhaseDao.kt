@@ -23,8 +23,8 @@ interface PhaseDao {
     @Update
     suspend fun updateAll(phases: List<Phase>)
 
-    @Query("UPDATE phase SET name = :name, description = :description WHERE id = :id")
-    suspend fun updateDetails(id: String, name: String, description: String): Int
+    @Query("UPDATE phase SET name = :name, description = :description, goal = :goal WHERE id = :id")
+    suspend fun updateDetails(id: String, name: String, description: String, goal: String): Int
 
     @Query("DELETE FROM phase WHERE id = :id")
     suspend fun delete(id: String)

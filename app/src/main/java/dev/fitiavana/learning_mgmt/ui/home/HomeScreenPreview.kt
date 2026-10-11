@@ -17,7 +17,7 @@ private val sampleDescription = """
     See the [course page](https://example.com) for `examples`.
 """.trimIndent()
 
-private fun samplePhase(number: Int, name: String) = Phase("p$number", "c", number, name, sampleDescription)
+private fun samplePhase(number: Int, name: String) = Phase("p$number", "c", number, name, sampleDescription, "Narrate past events in conversation")
 
 private class HomeStates : PreviewParameterProvider<HomeUiState> {
     override val values = sequenceOf(
@@ -34,6 +34,6 @@ private class HomeStates : PreviewParameterProvider<HomeUiState> {
 @Composable
 private fun HomeScreenPreview(@PreviewParameter(HomeStates::class) state: HomeUiState) {
     LearningmgmtTheme {
-        HomeScreen(state = state, onStart = {}, onComplete = {}, onManageCurricula = {}, onOpenMenu = {}, onShowPhases = {})
+        HomeScreen(state = state, onStart = {}, onComplete = {}, onManageCurricula = {}, onOpenMenu = {}, onShowPhases = {}, onShowDescription = {})
     }
 }

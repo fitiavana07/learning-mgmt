@@ -1,5 +1,6 @@
 package dev.fitiavana.learning_mgmt.features.sync
 
+import dev.fitiavana.learning_mgmt.db.DB_VERSION
 import dev.fitiavana.learning_mgmt.db.TestEnvironment
 import dev.fitiavana.learning_mgmt.features.curricula.Curriculum
 import dev.fitiavana.learning_mgmt.features.progress.PhaseStatus
@@ -79,7 +80,7 @@ class SyncRepositoryTest {
 
         assertTrue(snapshot.meta.isEmpty())
         assertNull(snapshot.violation())
-        assertEquals(3, snapshot.data.schemaVersion)
+        assertEquals(DB_VERSION, snapshot.data.schemaVersion)
     }
 
     @Test

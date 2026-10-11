@@ -27,6 +27,7 @@ fun PhaseEditorRoute(
         state = state,
         onNameChange = editor::onNameChange,
         onDescriptionChange = editor::onDescriptionChange,
+        onGoalChange = editor::onGoalChange,
         onPreviewChange = editor::setPreview,
         onSave = editor::save,
         onClose = onClose,

@@ -3,6 +3,13 @@ package dev.fitiavana.learning_mgmt.db
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
+/** Adds the plain-text goal of a phase; existing phases start with an empty one. */
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `phase` ADD COLUMN `goal` TEXT NOT NULL DEFAULT ''")
+    }
+}
+
 /**
  * Adds the curriculum order and the sync metadata. Curricula are numbered in insertion order (what
  * they were ordered by so far) and every existing row gets a zero stamp, older than any real write.

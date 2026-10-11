@@ -18,7 +18,7 @@ import dev.fitiavana.learning_mgmt.features.topics.Topic
 import dev.fitiavana.learning_mgmt.features.topics.TopicDao
 
 /** Bump on any entity change, together with a migration (see `Migrations.kt`). Also stamped on backups. */
-const val DB_VERSION = 3
+const val DB_VERSION = 4
 
 /** Registers the entities and DAOs; each feature package owns its own @Entity and DAO. */
 @Database(

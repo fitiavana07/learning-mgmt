@@ -39,7 +39,7 @@ class AppNavHostTest {
     fun setUp() = runBlocking {
         container = AppContainer(ApplicationProvider.getApplicationContext<Context>())
         val spanish = container.curriculumRepository.create("Spanish")
-        val basics = container.phaseRepository.add(spanish, "Basics", "")
+        val basics = container.phaseRepository.add(spanish, "Basics", "## Details", goal = "Order food")
         container.phaseRepository.add(spanish, "Verbs", "")
         container.progressRepository.start(basics)
         compose.setContent {
@@ -62,6 +62,21 @@ class AppNavHostTest {
         waitForText("Mark as completed")
 
         compose.onNodeWithText("Mark as completed").assertIsDisplayed()
+    }
+
+    @Test
+    fun homeShowsTheGoalAndShowDescriptionOpensTheRenderedDescription() {
+        waitForText("Show description")
+        compose.onNodeWithText("Order food").assertIsDisplayed()
+        compose.onAllNodesWithText("Details").assertCountEquals(0)
+
+        compose.onNodeWithText("Show description").performClick()
+        waitForText("Details")
+        compose.onNodeWithText("Details").assertIsDisplayed()
+
+        compose.onNodeWithContentDescription("Back").performClick()
+        waitForText("Mark as completed")
+        compose.onNodeWithText("Order food").assertIsDisplayed()
     }
 
     @Test

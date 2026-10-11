@@ -114,6 +114,41 @@ class PhaseEditorViewModelTest {
     }
 
     @Test
+    fun editingLoadsTheGoalAndChangingItMarksTheEditorDirty() = runBlocking {
+        val spanish = env.curricula.create("Spanish")
+        env.phases.add(spanish, "Basics", "# Intro", goal = "Order food")
+        val vm = editor(spanish, "p1")
+
+        assertEquals("Order food", vm.loaded().goal)
+        assertFalse(vm.uiState.value.dirty)
+
+        vm.onGoalChange("Order drinks")
+        assertTrue(vm.uiState.value.dirty)
+
+        vm.onGoalChange("Order food")
+        assertFalse(vm.uiState.value.dirty)
+    }
+
+    @Test
+    fun savingKeepsTheGoalOfANewAndOfAnExistingPhase() = runBlocking {
+        val spanish = spanishWithBasics()
+        val created = editor(spanish)
+        created.loaded()
+        created.onNameChange("Verbs")
+        created.onGoalChange("Conjugate")
+        created.save()
+        withTimeout(10_000) { created.uiState.first { it.saved } }
+
+        val edited = editor(spanish, "p1")
+        edited.loaded()
+        edited.onGoalChange("Greet people")
+        edited.save()
+        withTimeout(10_000) { edited.uiState.first { it.saved } }
+
+        assertEquals(listOf("Greet people", "Conjugate"), env.phases.observe(spanish).first().map { it.goal })
+    }
+
+    @Test
     fun aBlankNameIsRejectedAndNothingIsSaved() = runBlocking {
         val spanish = spanishWithBasics()
         val vm = editor(spanish)

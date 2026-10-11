@@ -20,6 +20,7 @@ fun HomeRoute(
     drawer: DrawerViewModel,
     onManageCurricula: () -> Unit,
     onShowPhases: () -> Unit,
+    onShowDescription: (phaseId: String) -> Unit,
 ) {
     val state by home.uiState.collectAsStateWithLifecycle()
     val items by drawer.items.collectAsStateWithLifecycle()
@@ -54,6 +55,7 @@ fun HomeRoute(
             onManageCurricula = onManageCurricula,
             onOpenMenu = { scope.launch { drawerState.open() } },
             onShowPhases = onShowPhases,
+            onShowDescription = onShowDescription,
             topicHandlers = home.topicHandlers,
         )
     }

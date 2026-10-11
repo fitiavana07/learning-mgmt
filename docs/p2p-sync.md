@@ -339,13 +339,16 @@ Package `dev.fitiavana.learning_mgmt`. Sync lives in `features/sync/`; its UI in
 
 ## Storage
 
-- **Schema version 3** (`DB_VERSION`). `MIGRATION_2_3` (in `db/Migrations.kt`) adds
+- **Schema version 4** (`DB_VERSION`). `MIGRATION_3_4` adds the plain-text `phase.goal`
+  (`NOT NULL DEFAULT ''`); `MigrationTest` covers `3 -> 4`. The backup/sync JSON carries `goal` on
+  each phase, and peers or backups on version 3 are refused by the existing strict version check.
+- **Schema version 3.** `MIGRATION_2_3` (in `db/Migrations.kt`) adds
   `curriculum.number`, seeded from the previous insertion order (`rowid`), creates `sync_meta`
   (`kind`, `id`, `stampTime`, `stampDevice`, `deleted`, primary key `(kind, id)`), and gives every
   existing row a zero stamp. The schema is exported to `app/schemas/.../3.json`, and
   `MigrationTest` covers `2 -> 3`. Backups from version 2 are refused by the existing strict
   version check.
-- **Feature tables are unchanged** apart from `curriculum.number`. Deleted rows are hard-deleted;
+- **Feature tables are unchanged** apart from `curriculum.number` and `phase.goal`. Deleted rows are hard-deleted;
   only `sync_meta` remembers them as tombstones.
 - Every DAO that lists curricula, phases or topics orders by `number, id`.
 - **Device-local settings** (`SyncSettingsStore`, a preferences file named `sync`): device id,

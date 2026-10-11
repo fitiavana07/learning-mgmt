@@ -1,5 +1,6 @@
 package dev.fitiavana.learning_mgmt.features.phases
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -25,4 +26,6 @@ data class Phase(
     val number: Int,
     val name: String,
     val description: String,
+    /** Plain text, not markdown. */
+    @ColumnInfo(defaultValue = "''") val goal: String = "",
 )

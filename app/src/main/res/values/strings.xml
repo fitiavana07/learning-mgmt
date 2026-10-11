@@ -7,6 +7,7 @@
     <string name="action_save">Save</string>
     <string name="action_rename">Rename</string>
     <string name="action_delete">Delete</string>
+    <string name="action_show_description">Show description</string>
     <string name="action_show_more">Show more</string>
     <string name="action_show_less">Show less</string>
     <string name="action_show_completed_topics">Show completed topics</string>
@@ -21,6 +22,7 @@
     <string name="phase_title">Phase %1$d · %2$s</string>
     <string name="phase_next">Next: Phase %1$d · %2$s</string>
     <string name="phase_not_found">Phase not found</string>
+    <string name="phase_description_title">Description</string>
     <string name="phases_title">Phases</string>
     <string name="phases_none_yet">No phases yet</string>
     <string name="phases_all_completed">All phases completed</string>
@@ -54,6 +56,7 @@
     <string name="phases_none_hint">Tap + to add one</string>
     <string name="editor_title_new">New phase</string>
     <string name="editor_title_edit">Edit phase</string>
+    <string name="editor_goal">Goal</string>
     <string name="editor_description">Description (markdown)</string>
     <string name="editor_write">Write</string>
     <string name="editor_preview">Preview</string>

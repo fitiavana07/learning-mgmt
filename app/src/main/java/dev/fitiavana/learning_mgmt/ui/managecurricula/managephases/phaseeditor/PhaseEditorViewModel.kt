@@ -16,13 +16,16 @@ data class PhaseEditorState(
     val isNew: Boolean = true,
     val name: String = "",
     val description: String = "",
+    val goal: String = "",
     val initialName: String = "",
     val initialDescription: String = "",
+    val initialGoal: String = "",
     val preview: Boolean = false,
     val nameError: Boolean = false,
     val saved: Boolean = false,
 ) {
-    val dirty: Boolean get() = name != initialName || description != initialDescription
+    val dirty: Boolean
+        get() = name != initialName || description != initialDescription || goal != initialGoal
 }
 
 /** Edits an existing phase when [phaseId] is given, otherwise a new phase appended to the curriculum. */
@@ -45,8 +48,10 @@ class PhaseEditorViewModel(
                     isNew = false,
                     name = existing.name,
                     description = existing.description,
+                    goal = existing.goal,
                     initialName = existing.name,
                     initialDescription = existing.description,
+                    initialGoal = existing.goal,
                 )
             }
         }
@@ -55,6 +60,8 @@ class PhaseEditorViewModel(
     fun onNameChange(name: String) = state.update { it.copy(name = name, nameError = false) }
 
     fun onDescriptionChange(description: String) = state.update { it.copy(description = description) }
+
+    fun onGoalChange(goal: String) = state.update { it.copy(goal = goal) }
 
     fun setPreview(preview: Boolean) = state.update { it.copy(preview = preview) }
 
@@ -67,9 +74,9 @@ class PhaseEditorViewModel(
         }
         viewModelScope.launch {
             if (phaseId == null) {
-                phases.add(curriculumId, current.name, current.description)
+                phases.add(curriculumId, current.name, current.description, current.goal)
             } else {
-                phases.update(phaseId, current.name, current.description)
+                phases.update(phaseId, current.name, current.description, current.goal)
             }
             state.update { it.copy(saved = true) }
         }

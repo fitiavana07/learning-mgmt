@@ -46,6 +46,7 @@ fun PhaseEditorScreen(
     state: PhaseEditorState,
     onNameChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
+    onGoalChange: (String) -> Unit,
     onPreviewChange: (Boolean) -> Unit,
     onSave: () -> Unit,
     onClose: () -> Unit,
@@ -85,7 +86,15 @@ fun PhaseEditorScreen(
                 title = stringResource(R.string.phase_not_found),
                 modifier = Modifier.padding(padding),
             )
-            else -> EditorForm(state, onNameChange, onDescriptionChange, onPreviewChange, onManageTopics, Modifier.padding(padding))
+            else -> EditorForm(
+                state,
+                onNameChange,
+                onDescriptionChange,
+                onGoalChange,
+                onPreviewChange,
+                onManageTopics,
+                Modifier.padding(padding),
+            )
         }
     }
 
@@ -106,6 +115,7 @@ private fun EditorForm(
     state: PhaseEditorState,
     onNameChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
+    onGoalChange: (String) -> Unit,
     onPreviewChange: (Boolean) -> Unit,
     onManageTopics: (() -> Unit)?,
     modifier: Modifier = Modifier,
@@ -126,6 +136,14 @@ private fun EditorForm(
             singleLine = true,
             keyboardOptions = TextInput.keyboardOptions,
             modifier = Modifier.fillMaxWidth().testTag("name-field"),
+        )
+        OutlinedTextField(
+            value = state.goal,
+            onValueChange = onGoalChange,
+            label = { Text(stringResource(R.string.editor_goal)) },
+            minLines = 2,
+            keyboardOptions = TextInput.keyboardOptions,
+            modifier = Modifier.fillMaxWidth().testTag("goal-field"),
         )
         if (!state.isNew && onManageTopics != null) {
             ListItem(

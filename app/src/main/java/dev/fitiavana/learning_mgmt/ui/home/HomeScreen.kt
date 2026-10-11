@@ -18,6 +18,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import dev.fitiavana.learning_mgmt.R
+import dev.fitiavana.learning_mgmt.features.phases.Phase
 import dev.fitiavana.learning_mgmt.features.progress.PhaseAction
 import dev.fitiavana.learning_mgmt.features.progress.Status
 import dev.fitiavana.learning_mgmt.ui.common.EmptyState
@@ -43,6 +45,7 @@ fun HomeScreen(
     onManageCurricula: () -> Unit,
     onOpenMenu: () -> Unit,
     onShowPhases: () -> Unit,
+    onShowDescription: (phaseId: String) -> Unit,
     topicHandlers: TopicHandlers = TopicHandlers.None,
 ) {
     val content = state.content
@@ -98,6 +101,7 @@ fun HomeScreen(
                             collapseCompleted = true,
                         )
                     },
+                    body = { GoalAndDescriptionLink(content.phase, onShowDescription) },
                 )
                 is HomeContent.ReadyToStart -> PhaseContent(
                     content.phase,
@@ -105,8 +109,22 @@ fun HomeScreen(
                         Text(stringResource(R.string.home_ready_to_begin), style = MaterialTheme.typography.titleMedium)
                     },
                     footer = { TopicsSection(content.topics, editable = false, handlers = topicHandlers) },
+                    body = { GoalAndDescriptionLink(content.phase, onShowDescription) },
                 )
             }
+        }
+    }
+}
+
+/** The plain-text goal (if any), then a link to the full markdown description (if any). */
+@Composable
+private fun GoalAndDescriptionLink(phase: Phase, onShowDescription: (String) -> Unit) {
+    if (phase.goal.isNotBlank()) {
+        Text(phase.goal, style = MaterialTheme.typography.bodyLarge)
+    }
+    if (phase.description.isNotBlank()) {
+        TextButton(onClick = { onShowDescription(phase.id) }) {
+            Text(stringResource(R.string.action_show_description))
         }
     }
 }

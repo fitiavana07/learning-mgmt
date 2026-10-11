@@ -20,19 +20,19 @@ class PhaseRepository(
     fun observe(curriculumId: String): Flow<List<Phase>> =
         dao.observeByCurriculum(curriculumId).map(PhaseOrdering::renumber)
 
-    suspend fun add(curriculumId: String, name: String, description: String): String =
+    suspend fun add(curriculumId: String, name: String, description: String, goal: String = ""): String =
         db.withTransaction {
             val id = newId()
             val number = PhaseOrdering.nextNumber(dao.getByCurriculum(curriculumId))
-            dao.insert(Phase(id, curriculumId, number, validName(name), description))
+            dao.insert(Phase(id, curriculumId, number, validName(name), description, goal))
             tracker.touch(SyncKind.PHASE, id)
             id
         }
 
-    suspend fun update(id: String, name: String, description: String) {
+    suspend fun update(id: String, name: String, description: String, goal: String = "") {
         val valid = validName(name)
         db.withTransaction {
-            if (dao.updateDetails(id, valid, description) > 0) tracker.touch(SyncKind.PHASE, id)
+            if (dao.updateDetails(id, valid, description, goal) > 0) tracker.touch(SyncKind.PHASE, id)
         }
     }
 

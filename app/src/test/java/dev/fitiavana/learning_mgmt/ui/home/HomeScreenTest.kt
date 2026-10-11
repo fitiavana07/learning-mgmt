@@ -6,6 +6,7 @@ import dev.fitiavana.learning_mgmt.features.progress.TopicWithProgress
 import dev.fitiavana.learning_mgmt.features.progress.Status
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -32,6 +33,7 @@ class HomeScreenTest {
     private var managed = 0
     private var menuOpened = 0
     private var phasesShown = 0
+    private val descriptionsShown = mutableListOf<String>()
 
     private fun show(state: HomeUiState) {
         compose.setContent {
@@ -43,33 +45,69 @@ class HomeScreenTest {
                     onManageCurricula = { managed++ },
                     onOpenMenu = { menuOpened++ },
                     onShowPhases = { phasesShown++ },
+                    onShowDescription = { descriptionsShown += it },
                 )
             }
         }
     }
 
-    private fun phase(number: Int, name: String, description: String = "") =
-        Phase("p$number", "c", number, name, description)
+    private fun phase(number: Int, name: String, description: String = "", goal: String = "") =
+        Phase("p$number", "c", number, name, description, goal)
 
     @Test
-    fun inProgressShowsTitleStatusDescriptionAndCompleteButton() {
+    fun inProgressShowsTitleStatusGoalAndCompleteButton() {
         show(
             HomeUiState(
                 "Spanish A2",
-                HomeContent.InProgress(phase(2, "Past Tenses", "## Goals\n- [ ] Finish exercises")),
+                HomeContent.InProgress(phase(2, "Past Tenses", "## Details", goal = "Narrate past events")),
             ),
         )
 
         compose.onNodeWithText("Spanish A2").assertIsDisplayed()
         compose.onNodeWithText("Phase 2 · Past Tenses").assertIsDisplayed()
         compose.onNodeWithText("In progress").assertIsDisplayed()
-        // Markdown is parsed off the main thread, so wait for it to appear.
-        compose.waitUntil(timeoutMillis = 5_000) {
-            compose.onAllNodesWithText("Goals").fetchSemanticsNodes().isNotEmpty()
-        }
-        compose.onNodeWithText("Goals").assertIsDisplayed()
-        compose.onNodeWithText("Finish exercises").assertIsDisplayed()
+        compose.onNodeWithText("Narrate past events").assertIsDisplayed()
         compose.onNodeWithText("Mark as completed").assertIsDisplayed()
+    }
+
+    @Test
+    fun theGoalIsShownAsPlainTextAndTheDescriptionIsNotShownOnHome() {
+        show(
+            HomeUiState(
+                "Spanish",
+                HomeContent.InProgress(phase(2, "Past Tenses", "## Details", goal = "Narrate **past** events")),
+            ),
+        )
+
+        compose.onNodeWithText("Narrate **past** events").assertIsDisplayed()
+        compose.onAllNodesWithText("Details").assertCountEquals(0)
+    }
+
+    @Test
+    fun showDescriptionOpensTheDescriptionOfThePhase() {
+        show(HomeUiState("Spanish", HomeContent.InProgress(phase(2, "Past Tenses", "## Details"))))
+
+        compose.onNodeWithText("Show description").performClick()
+
+        assertEquals(listOf("p2"), descriptionsShown)
+    }
+
+    @Test
+    fun readyToStartAlsoShowsTheGoalAndTheDescriptionButton() {
+        show(HomeUiState("Spanish", HomeContent.ReadyToStart(phase(1, "Basics", "d", goal = "Greet people"))))
+
+        compose.onNodeWithText("Greet people").assertIsDisplayed()
+        compose.onNodeWithText("Show description").performClick()
+
+        assertEquals(listOf("p1"), descriptionsShown)
+    }
+
+    @Test
+    fun aPhaseWithoutGoalOrDescriptionShowsNeitherAnEmptyGoalNorTheButton() {
+        show(HomeUiState("Spanish", HomeContent.InProgress(phase(2, "Past Tenses"))))
+
+        compose.onNodeWithText("Show description").assertDoesNotExist()
+        compose.onNodeWithText("Phase 2 · Past Tenses").assertIsDisplayed()
     }
 
     @Test
@@ -179,6 +217,7 @@ class HomeScreenTest {
                     onManageCurricula = { managed++ },
                     onOpenMenu = { menuOpened++ },
                     onShowPhases = { phasesShown++ },
+                    onShowDescription = {},
                     topicHandlers = TopicHandlers(onStart = { startedTopics += it }, onComplete = {}, onRecord = { _, _ -> }),
                 )
             }
