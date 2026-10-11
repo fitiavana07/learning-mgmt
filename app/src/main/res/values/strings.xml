@@ -97,6 +97,7 @@
     <string name="topic_decrease_progress">Remove one</string>
     <string name="action_start_topic">Start</string>
     <string name="action_complete_topic">Complete</string>
+    <string name="complete_topic_dialog_title">Complete Topic %1$d?</string>
     <string name="action_update_progress">Update</string>
     <!-- Counts of topics already done out of all, not a quantity to pluralize. -->
     <string name="action_wait_for_topics" tools:ignore="PluralsCandidate">Complete all topics first (%1$d of %2$d done)</string>

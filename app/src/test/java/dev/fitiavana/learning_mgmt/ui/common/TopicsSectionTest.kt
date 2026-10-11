@@ -2,6 +2,9 @@ package dev.fitiavana.learning_mgmt.ui.common
 
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -82,13 +85,37 @@ class TopicsSectionTest {
     }
 
     @Test
-    fun theInProgressTopicCanBeCompletedAndNoOtherCanBeStarted() {
+    fun theInProgressTopicOffersCompleteAndNoOtherCanBeStarted() {
         show(listOf(t(1, Status.IN_PROGRESS), t(2, Status.NOT_STARTED)))
 
         compose.onNodeWithText("Start").assertDoesNotExist()
+        compose.onNodeWithText("Complete").assertIsDisplayed()
+    }
+
+    @Test
+    fun completingASimpleTopicAsksForConfirmationFirst() {
+        show(listOf(t(1, Status.IN_PROGRESS), t(2, Status.NOT_STARTED)))
+
         compose.onNodeWithText("Complete").performClick()
 
+        compose.onNodeWithText("Complete Topic 1?").assertIsDisplayed()
+        assertEquals(emptyList<String>(), completed)
+
+        compose.onNode(hasText("Complete") and hasAnyAncestor(isDialog())).performClick()
+
         assertEquals(listOf("t1"), completed)
+        compose.onNodeWithText("Complete Topic 1?").assertDoesNotExist()
+    }
+
+    @Test
+    fun cancellingTheTopicConfirmationCompletesNothing() {
+        show(listOf(t(1, Status.IN_PROGRESS)))
+
+        compose.onNodeWithText("Complete").performClick()
+        compose.onNodeWithText("Cancel").performClick()
+
+        assertEquals(emptyList<String>(), completed)
+        compose.onNodeWithText("Complete Topic 1?").assertDoesNotExist()
     }
 
     @Test

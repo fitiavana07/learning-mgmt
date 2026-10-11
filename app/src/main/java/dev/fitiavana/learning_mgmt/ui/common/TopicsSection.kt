@@ -41,7 +41,7 @@ import dev.fitiavana.learning_mgmt.features.progress.TopicWithProgress
 /**
  * The topics of a phase: overall progress, then each topic with its status and, for quantified
  * topics, a progress bar. With [editable], the next topic can be started, and the one in progress
- * completed (or have its progress updated). With [collapseCompleted], completed topics are hidden
+ * completed after a confirmation (or have its progress updated). With [collapseCompleted], completed topics are hidden
  * behind a "Show completed topics" button. Draws nothing when there are no topics.
  */
 @Composable
@@ -101,6 +101,7 @@ private fun TopicRowItem(
     val id = topic.topic.id
     val total = topic.topic.total
     var editing by rememberSaveable(id) { mutableStateOf(false) }
+    var confirmingComplete by rememberSaveable(id) { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             StatusIcon(topic.status)
@@ -119,8 +120,19 @@ private fun TopicRowItem(
             }
             // A quantified topic completes by reaching its total, so only a simple one has a button.
             if (canProgress && total == null) {
-                TextButton(onClick = { handlers.onComplete(id) }) { Text(stringResource(R.string.action_complete_topic)) }
+                TextButton(onClick = { confirmingComplete = true }) { Text(stringResource(R.string.action_complete_topic)) }
             }
+        }
+        if (confirmingComplete) {
+            ConfirmDialog(
+                title = stringResource(R.string.complete_topic_dialog_title, topic.topic.number),
+                confirmLabel = stringResource(R.string.action_complete_topic),
+                onConfirm = {
+                    confirmingComplete = false
+                    handlers.onComplete(id)
+                },
+                onDismiss = { confirmingComplete = false },
+            )
         }
         if (total != null) {
             Row(

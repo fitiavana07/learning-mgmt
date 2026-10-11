@@ -5,8 +5,10 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -284,6 +286,7 @@ class AppNavHostTest {
         compose.onNodeWithText("Start").performClick()
         waitForText("Complete")
         compose.onNodeWithText("Complete").performClick()
+        compose.onNode(hasText("Complete") and hasAnyAncestor(isDialog())).performClick()
 
         waitForText("1 of 1 topic completed")
         compose.onNodeWithText("Mark as completed").assertIsEnabled()
