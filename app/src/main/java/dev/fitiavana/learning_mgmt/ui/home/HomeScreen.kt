@@ -34,6 +34,7 @@ import dev.fitiavana.learning_mgmt.features.progress.Status
 import dev.fitiavana.learning_mgmt.ui.common.EmptyState
 import dev.fitiavana.learning_mgmt.ui.common.PhaseActionBar
 import dev.fitiavana.learning_mgmt.ui.common.PhaseContent
+import dev.fitiavana.learning_mgmt.ui.common.PhaseGoal
 import dev.fitiavana.learning_mgmt.ui.common.StatusChip
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -119,14 +120,7 @@ fun HomeScreen(
 /** The plain-text goal (if any), then a link to the full markdown description (if any). */
 @Composable
 private fun GoalAndDescriptionLink(phase: Phase, onShowDescription: (String) -> Unit) {
-    if (phase.goal.isNotBlank()) {
-        Text(
-            stringResource(R.string.editor_goal),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(phase.goal, style = MaterialTheme.typography.bodyLarge)
-    }
+    PhaseGoal(phase.goal)
     if (phase.description.isNotBlank()) {
         TextButton(onClick = { onShowDescription(phase.id) }) {
             Text(stringResource(R.string.action_show_description))

@@ -53,6 +53,27 @@ class PhaseViewScreenTest {
     }
 
     @Test
+    fun showsTheLabelledGoalWhenThePhaseHasOne() {
+        val withGoal = phase(1, "Basics", Status.NOT_STARTED)
+        show(
+            PhaseViewState.Loaded(
+                withGoal.copy(phase = withGoal.phase.copy(goal = "Hold a conversation")),
+                PhaseAction.None,
+            ),
+        )
+
+        compose.onNodeWithText("Goal").assertIsDisplayed()
+        compose.onNodeWithText("Hold a conversation").assertIsDisplayed()
+    }
+
+    @Test
+    fun hidesTheGoalLabelWhenThereIsNoGoal() {
+        show(PhaseViewState.Loaded(phase(1, "Basics", Status.NOT_STARTED), PhaseAction.None))
+
+        compose.onNodeWithText("Goal").assertDoesNotExist()
+    }
+
+    @Test
     fun hasNoEditButtonInReadMode() {
         show(PhaseViewState.Loaded(phase(1, "Basics", Status.NOT_STARTED), PhaseAction.Start))
 

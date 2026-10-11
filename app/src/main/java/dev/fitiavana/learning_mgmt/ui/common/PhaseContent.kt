@@ -27,7 +27,10 @@ fun PhaseContent(
     modifier: Modifier = Modifier,
     header: @Composable () -> Unit = {},
     footer: @Composable () -> Unit = {},
-    body: @Composable () -> Unit = { PhaseDescription(phase.description) },
+    body: @Composable () -> Unit = {
+        PhaseGoal(phase.goal, Modifier.padding(bottom = 8.dp))
+        PhaseDescription(phase.description)
+    },
 ) {
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
         header()
@@ -44,6 +47,8 @@ fun PhaseContent(
 
 @Composable
 private fun PhaseDescription(description: String) {
+    if (description.isBlank()) return
+    SectionLabel(stringResource(R.string.phase_description_title))
     CollapsibleContent(contentModifier = Modifier.testTag("phase-description")) {
         MarkdownText(description)
     }

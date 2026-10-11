@@ -47,6 +47,21 @@ class PhaseContentTest {
         compose.waitUntil(5_000) { compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty() }
 
     @Test
+    fun aDescriptionIsLabelled() {
+        show("Just **one** line")
+
+        waitForText("Just one line")
+        compose.onNodeWithText("Description").assertIsDisplayed()
+    }
+
+    @Test
+    fun noDescriptionLabelWithoutADescription() {
+        show("")
+
+        compose.onNodeWithText("Description").assertDoesNotExist()
+    }
+
+    @Test
     fun aShortDescriptionIsShownInFullWithoutAToggle() {
         show("Just **one** line")
 
