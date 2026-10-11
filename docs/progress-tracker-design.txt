@@ -1,0 +1,253 @@
+Curriculum Progress Tracker – Design Document
+Version 1.1
+
+Goal
+----
+A domain-agnostic progress-tracking app for curricula that share a fixed hierarchical structure:
+
+  Intro → Operating Manual (optional) → numbered Phases → Topics → Appendix (optional)
+
+The same app must work unchanged for any subject that follows this shape (for example JLPT N4 preparation, intermediate English, music theory, professional certification study, etc.). The app never depends on the subject matter itself—only on the structure.
+
+Core Principles
+---------------
+1. Structure-first, content-agnostic
+   The app understands only the shape of a curriculum. Subject-specific language appears solely as plain text inside fields.
+
+2. Progress is separate from content
+   Curriculum definition and user progress are distinct data. Progress records reference curriculum elements by stable identifiers.
+
+3. “Done” is guided by the curriculum
+   The Operating Manual and each topic’s self-check criteria define what completion means. The app surfaces those definitions and lets the user mark items against them.
+
+4. Minimal friction
+   The primary action on any trackable item is changing its status. Notes, confidence ratings, and time logs are optional enrichments.
+
+
+1. Curriculum Schema (Domain-Agnostic)
+-------------------------------------
+This is the only contract the app depends on. Any curriculum expressible in this shape is supported.
+
+Curriculum
+  id                string          Stable identifier (e.g. "jlpt-n4-2026", "english-b2-core")
+  title             string
+  version           string?         Optional version label
+  intro
+    subtitle        string?
+    tagline         string?
+    overallGoal     string?
+    timeHorizon     string?         Free-text estimate of realistic overall duration
+    timeRule        string?         Guidance on intensity / daily commitment
+  guide?                            Operating Manual / “How to Work This Curriculum”
+    title           string
+    shortTitle      string?
+    duration        string?
+    sections        Section[]       Ordered list of named sections with body text
+  phases            Phase[]         Ordered, numbered phases
+  appendix?
+    title           string
+    sections        Section[]
+
+Section
+  name              string
+  body              string          Markdown or plain text
+
+Phase
+  num               number          1-based index
+  title             string
+  shortTitle        string?
+  duration          string?         Free text (e.g. "3–6 weeks")
+  goal              string?
+  exitGate          string?         Criteria the learner should meet before leaving the phase
+  topics            Topic[]
+  practices         string[]?       Recurring practices recommended for the phase
+  warning           string?
+  checklist         string[]?       Process checklist items for the phase
+  schedule          string?         Suggested weekly rhythm (plain text or markdown)
+  resources?
+    books           string[]?
+    websites        string[]?
+    courses         string[]?
+
+Topic
+  id                string          Stable within the curriculum (e.g. "p2-t3" or a slug of the name)
+  name              string
+  level             string?         Typically "must-master" or "good-to-know"; free string allowed
+  desc              string?
+  optional          string?         Optional enrichment note
+  keywords          string?         Research / study keywords
+  questions         string?         Key questions the learner should be able to answer
+  selfCheck         string?         Criteria for self-assessing mastery
+
+Notes on the schema
+- Only the hierarchical skeleton (phases containing topics) is required.
+- All other fields are optional so lighter curricula remain valid.
+- Topic and phase identifiers must remain stable across curriculum revisions so progress can be preserved.
+
+
+2. Progress Data Model
+----------------------
+Progress is stored independently of the curriculum content and is keyed to a specific curriculum instance.
+
+CurriculumProgress
+  curriculumId      string
+  curriculumVersion string?
+  startedAt         string          ISO date
+  lastTouchedAt     string          ISO date
+  phases            map<number, PhaseProgress>   Keyed by phase.num
+  notes             string?         Free-form notes at curriculum level
+
+PhaseProgress
+  status            "not-started" | "in-progress" | "completed"
+  completedAt       string?
+  topics            map<string, TopicProgress>   Keyed by topic.id
+  checklist         map<number, boolean>?        Index → checked state for phase checklist items
+  practicesLog      PracticeEntry[]?             Optional light log of practice sessions
+  notes             string?
+
+PracticeEntry
+  date              string          ISO date
+  note              string?
+
+TopicProgress
+  status            "not-started" | "in-progress" | "completed"
+  completedAt       string?
+  confidence        1 | 2 | 3 | 4 | 5?           Optional self-rating
+  timeSpentMinutes  number?
+  notes             string?
+  steps?                                        Optional snapshot of a standard multi-step procedure
+    oriented        boolean?
+    researched      boolean?
+    questionsAnswered boolean?
+    selfChecked     boolean?
+    resourceUsed    boolean?
+    linkedToPractice boolean?
+
+
+3. Behavior & Derivation Rules
+------------------------------
+Status transitions
+- Topic or phase status cycles: not-started → in-progress → completed.
+- User can always move backward (reset) if desired.
+- Setting a topic to in-progress or completed automatically moves its parent phase to at least in-progress.
+
+Phase completion
+- A phase may be marked completed by the user at any time.
+- Optionally the app may offer a convenience action “Mark complete when all must-master topics are done,” but final confirmation remains with the user.
+- Exit-gate text is shown as a reminder; the app does not automatically enforce it.
+
+Overall progress percentage
+- Calculated as completed topics / total topics (or, if preferred by the user, only must-master topics).
+- Phase-level percentage follows the same rule within that phase.
+- Weighting is equal across topics unless a future option allows otherwise.
+
+Activity tracking
+- lastTouchedAt updates whenever any progress field changes.
+- startedAt is set once, on first meaningful interaction with that curriculum’s progress.
+
+Checklist & practices
+- Phase checklist items are independent boolean toggles; they do not automatically affect phase status.
+- Practice log entries are append-only records for the user’s own reference.
+
+
+4. UI / UX Specification
+------------------------
+Design is mobile-first and works identically on any screen size. No desktop-only layouts or persistent sidebars are assumed.
+
+4.1 Information Architecture
+
+Home / Dashboard
+  - Curriculum title and overall progress indicator (ring or bar)
+  - Current (or most recently touched) phase with its own progress
+  - Primary action: Continue (opens the relevant phase or next incomplete topic)
+  - Light activity summary (e.g. last touched date, optional streak of days with activity)
+
+Phase List
+  - Ordered list of all phases
+  - Each row shows: number badge, title/short title, duration (if present), progress bar, status chip
+  - Tapping a phase opens Phase Detail
+
+Phase Detail
+  - Header: phase number, title, duration, status control
+  - Collapsible or always-visible blocks:
+      Goal
+      Exit Gate
+      Topics (list)
+      Process Checklist (if present)
+      Practices (if present)
+      Suggested Schedule (if present)
+      Resources (if present)
+  - Each topic row shows name, level badge, status control, optional confidence dots
+  - Tapping a topic opens Topic Detail
+
+Topic Detail
+  - Full topic fields: name, level, description, optional note, keywords, key questions, self-check
+  - Status control (primary action)
+  - Optional confidence selector (1–5)
+  - Optional notes field
+  - Optional multi-step procedure toggles (Orient → Research → Answer questions → Self-check → Resource → Link to practice)
+  - When the curriculum supplies a definition of “done” (from the Operating Manual or the topic’s self-check), that text is displayed near the status control as guidance
+
+Guide (Operating Manual)
+  - Read-only rendering of the guide title and its sections
+  - Accessible from Home or via a persistent secondary navigation item
+
+Appendix
+  - Read-only rendering of appendix sections
+  - Same access pattern as the Guide
+
+4.2 Interaction Patterns
+
+Status controls
+  - One-tap or clear toggle to advance status
+  - Visual states are immediately distinguishable (empty / partial / filled)
+  - Long-press or explicit secondary action for reset
+
+Progress affordances
+  - Thin progress bar on every phase row and on the dashboard
+  - Level badges (must-master vs good-to-know) are visually distinct but not hierarchical in a way that hides good-to-know items
+  - Confidence, when used, appears as a small set of dots or a compact selector—never required
+
+Navigation
+  - Back navigation always returns to the logical parent (Topic → Phase → Phase List / Home)
+  - Deep links into a specific phase or topic are supported so “Continue” can land the user exactly where they left off
+
+Empty & edge states
+  - A curriculum with no progress yet shows clear “Start” affordances
+  - Phases with zero topics are still listable and can carry checklist / practice / exit-gate data
+  - Missing optional fields simply omit their UI blocks; layout does not leave empty holes
+
+Visual hierarchy (content-agnostic)
+  - Operating Manual uses a distinct accent treatment so it is never confused with numbered phases
+  - Numbered phases use a strong, consistent number badge and primary accent
+  - Appendix uses a quieter secondary treatment
+  - These distinctions are purely visual and carry no subject-matter meaning
+
+4.3 Daily / Session Flow (reference)
+
+1. Open app → Dashboard shows overall progress and current phase
+2. Enter current phase
+3. Choose next incomplete topic (or any topic)
+4. Work with the topic’s keywords, questions, and self-check
+5. Optionally tick procedure steps and add a short note or confidence rating
+6. Mark topic complete
+7. Return to phase; update checklist or log a practice entry if desired
+8. When the exit gate feels satisfied, mark the phase complete
+
+
+5. Future Optional Modules
+--------------------------
+These remain domain-agnostic and can be added without changing the core schemas.
+
+- Time tracking per topic or per session
+- Lightweight spaced repetition of a topic’s key questions or self-check prompts
+- Printable or exportable progress summary (human-readable)
+- User-configurable weighting (e.g. must-master topics count more toward percentages)
+- Simple session timer that records elapsed minutes into TopicProgress.timeSpentMinutes
+- Streak or consistency indicators based on lastTouchedAt / practice log dates
+- Ability to attach arbitrary free-form tags or labels to topics for personal filtering
+
+None of these modules introduce subject-specific logic.
+
+
+End of design document
