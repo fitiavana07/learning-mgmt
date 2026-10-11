@@ -27,8 +27,8 @@ android {
         applicationId = "dev.fitiavana.learning_mgmt"
         minSdk = 26
         targetSdk = 37
-        versionCode = 15
-        versionName = "0.15"
+        versionCode = 16
+        versionName = "0.16"
     }
 
     signingConfigs {
