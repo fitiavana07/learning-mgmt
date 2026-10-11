@@ -84,6 +84,18 @@ class HomeScreenTest {
     }
 
     @Test
+    fun theGoalIsLabelledAndNoLabelIsShownWithoutGoal() {
+        show(HomeUiState("Spanish", HomeContent.InProgress(phase(2, "Past Tenses", goal = "Narrate past events"))))
+        compose.onNodeWithText("Goal").assertIsDisplayed()
+    }
+
+    @Test
+    fun noGoalLabelWhenThePhaseHasNoGoal() {
+        show(HomeUiState("Spanish", HomeContent.InProgress(phase(2, "Past Tenses"))))
+        compose.onNodeWithText("Goal").assertDoesNotExist()
+    }
+
+    @Test
     fun showDescriptionOpensTheDescriptionOfThePhase() {
         show(HomeUiState("Spanish", HomeContent.InProgress(phase(2, "Past Tenses", "## Details"))))
 

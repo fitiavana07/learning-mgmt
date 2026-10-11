@@ -120,6 +120,11 @@ fun HomeScreen(
 @Composable
 private fun GoalAndDescriptionLink(phase: Phase, onShowDescription: (String) -> Unit) {
     if (phase.goal.isNotBlank()) {
+        Text(
+            stringResource(R.string.editor_goal),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         Text(phase.goal, style = MaterialTheme.typography.bodyLarge)
     }
     if (phase.description.isNotBlank()) {
