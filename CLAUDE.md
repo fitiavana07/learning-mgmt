@@ -52,7 +52,7 @@ is untracked):
   26, Compose BOM 2026.02.01. Kotlin Compose compiler comes from the
   `kotlin.compose` plugin (no separate compiler version). AGP 9 has built-in
   Kotlin, so there is no `kotlin.android` plugin applied.
-- Release build has optimization (R8) disabled; Java 11 source/target.
+- Release build has optimization (R8) enabled; Java 11 source/target.
 - `gradle/gradle-daemon-jvm.properties` pins the Gradle daemon JVM.
 
 ### When adding new libraries
